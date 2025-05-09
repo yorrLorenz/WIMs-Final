@@ -32,33 +32,24 @@ public class DashboardController {
 
     // 📌 Warehouse dashboard with grouped related logs
     @GetMapping("/warehouse/{warehouseId}")
-    public String warehouseDashboard(@PathVariable String warehouseId, Model model) {
-        String decodedName = URLDecoder.decode(warehouseId, StandardCharsets.UTF_8);
-        Optional<Warehouse> optionalWarehouse = warehouseRepository.findByName(decodedName);
-    
-        if (optionalWarehouse.isEmpty()) {
-            return "redirect:/location-selection";
+public String warehouseDashboard(@PathVariable String warehouseId, Model model) {
+    Optional<Warehouse> warehouseOpt = warehouseRepository.findByName(URLDecoder.decode(warehouseId, StandardCharsets.UTF_8));
+    if (warehouseOpt.isEmpty()) return "redirect:/location-selection";
+
+    Warehouse warehouse = warehouseOpt.get();
+    List<Log> logs = logRepository.findByWarehouseOrderByDateTimeDesc(warehouse.getName());
+
+    for (Log log : logs) {
+        if (log.getGroupId() != null) {
+            log.setRelatedLogs(logRepository.findByGroupIdOrderByDateTimeDesc(log.getGroupId()));
         }
-    
-        Warehouse warehouse = optionalWarehouse.get();
-        model.addAttribute("warehouse", warehouse);
-    
-        // Fetch logs sorted by most recent
-        List<Log> logs = logRepository.findByWarehouseOrderByDateTimeDesc(warehouse.getName());
-    
-        // 🛠️ Attach related logs to each log entry
-        for (Log log : logs) {
-            if (log.getGroupId() != null) {
-                List<Log> relatedLogs = logRepository.findByGroupIdOrderByDateTimeDesc(log.getGroupId());
-                log.setRelatedLogs(relatedLogs);
-            }
-        }
-    
-        // 🛡️ Ensure logs list is never null
-        model.addAttribute("logs", logs != null ? logs : List.of());
-    
-        return "dashboard";
     }
+
+    model.addAttribute("warehouse", warehouse);
+    model.addAttribute("logs", logs);
+    return "dashboard";
+}
+
     
 
     // 📌 Show Add Product Form
@@ -96,7 +87,7 @@ public class DashboardController {
         log.setDateTime(LocalDateTime.now());
         log.setUsername(principal.getName());
         log.setAction(logForm.getAction());
-        log.setItem(logForm.getItemName());
+        log.setItem(logForm.getItem());
         log.setWarehouse(warehouse.getName());
         log.setLocation(logForm.getWarehouseLocation());
         log.setGroupId(logForm.getGroupId()); // Optional: group for expandable logs

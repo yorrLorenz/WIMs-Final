@@ -2,7 +2,7 @@ package com.wims.dto;
 
 public class LogForm {
     private String action;
-    private String itemName;
+    private String item; // changed from itemName to item
     private String warehouseLocation;
     private String groupId;
 
@@ -14,11 +14,11 @@ public class LogForm {
         this.action = action;
     }
 
-    public String getItemName() {
-        return itemName;
+    public String getItem() {
+        return item;
     }
-    public void setItemName(String itemName) {
-        this.itemName = itemName;
+    public void setItem(String item) {
+        this.item = item;
     }
 
     public String getWarehouseLocation() {

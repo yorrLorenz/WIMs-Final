@@ -1,3 +1,4 @@
+// src/pages/CreateAccountPage.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -7,11 +8,11 @@ const CreateAccountPage = () => {
     password: "",
     role: "ADMIN",
     warehouse: "",
-    imageUrl: "", // Optional image field
   });
 
   const [warehouses, setWarehouses] = useState([]);
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,106 +21,107 @@ const CreateAccountPage = () => {
     })
       .then((res) => res.json())
       .then((data) => setWarehouses(data))
-      .catch((err) => console.error("Error loading warehouses:", err));
+      .catch((err) => {
+        console.error("Error loading warehouses:", err);
+        setWarehouses([]);
+      });
   }, []);
 
   const handleChange = (e) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setMessage("");
+    setError("");
 
-    const response = await fetch("http://localhost:8080/api/accounts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(form),
-    });
+    if (!form.username || !form.password || !form.role) {
+      setError("All fields are required.");
+      return;
+    }
 
-    if (response.ok) {
-      setMessage("✅ Account created successfully!");
-      setTimeout(() => navigate("/select-warehouse"), 1000);
-    } else {
-      const text = await response.text();
-      setMessage(`❌ ${text}`);
+    if (form.role === "CLERK" && !form.warehouse) {
+      setError("Clerk must select a warehouse.");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:8080/api/accounts/create", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      if (res.ok) {
+        setMessage("Account created successfully!");
+        setTimeout(() => navigate("/select-warehouse"), 1000);
+      } else {
+        const text = await res.text();
+        setError(text || "Failed to create account.");
+      }
+    } catch (err) {
+      console.error("Network error:", err);
+      setError("Network error");
     }
   };
 
   return (
-    <div style={{ textAlign: "center", padding: "2rem" }}>
-      <h2>Create New Account</h2>
+    <div style={{ padding: "2rem", maxWidth: "500px", margin: "0 auto" }}>
+      <h2>Create Account</h2>
+
+      {message && <div style={{ color: "green", marginBottom: "1rem" }}>{message}</div>}
+      {error && <div style={{ color: "red", marginBottom: "1rem" }}>{error}</div>}
+
       <form onSubmit={handleSubmit}>
+        <label>Username:</label>
         <input
-          type="text"
           name="username"
           value={form.username}
           onChange={handleChange}
-          placeholder="Username"
           required
-          style={{ padding: "0.5rem", width: "250px" }}
-        />
-        <br /><br />
+        /><br /><br />
+
+        <label>Password:</label>
         <input
-          type="password"
           name="password"
+          type="password"
           value={form.password}
           onChange={handleChange}
-          placeholder="Password"
           required
-          style={{ padding: "0.5rem", width: "250px" }}
-        />
-        <br /><br />
-        <input
-          type="text"
-          name="imageUrl"
-          value={form.imageUrl}
-          onChange={handleChange}
-          placeholder="Image URL (optional)"
-          style={{ padding: "0.5rem", width: "250px" }}
-        />
-        <br /><br />
-        <select
-          name="role"
-          value={form.role}
-          onChange={handleChange}
-          style={{ padding: "0.5rem", width: "250px" }}
-        >
+        /><br /><br />
+
+        <label>Role:</label>
+        <select name="role" value={form.role} onChange={handleChange}>
           <option value="ADMIN">Admin</option>
           <option value="CLERK">Clerk</option>
-        </select>
-        <br /><br />
+        </select><br /><br />
 
         {form.role === "CLERK" && (
           <>
+            <label>Warehouse:</label>
             <select
               name="warehouse"
               value={form.warehouse}
               onChange={handleChange}
               required
-              style={{ padding: "0.5rem", width: "250px" }}
             >
-              <option value="">Select Warehouse</option>
+              <option value="">-- Select Warehouse --</option>
               {warehouses.map((w) => (
-                <option key={w} value={w}>
-                  {w}
+                <option key={w.id} value={w.name}>
+                  {w.name}
                 </option>
               ))}
-            </select>
-            <br /><br />
+            </select><br /><br />
           </>
         )}
 
-        <button type="submit" style={{ padding: "0.5rem 1rem" }}>
-          Create Account
-        </button>
+        <button type="submit">Create Account</button>
       </form>
-
-      {message && <p style={{ marginTop: "1rem", color: "green" }}>{message}</p>}
-
-      <button onClick={() => navigate("/select-warehouse")} style={{ marginTop: "2rem" }}>
-        ← Back
-      </button>
     </div>
   );
 };

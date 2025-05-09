@@ -17,16 +17,17 @@ const AdminDashboard = () => {
   }, []);
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/admin/logs", {
-      credentials: "include",
-    })
-      .then((res) => res.json())
-      .then((data) => setLogs(data.logs || []))
-      .catch((err) => {
-        console.error("❌ Error fetching admin dashboard data:", err);
-        setLogs([]);
-      });
-  }, []);
+  fetch("http://localhost:8080/api/admin/logs", {
+    credentials: "include",
+  })
+    .then((res) => res.json())
+    .then((data) => setLogs(data.logs || []))
+    .catch((err) => {
+      console.error("❌ Error fetching admin dashboard data:", err);
+      setLogs([]);
+    });
+}, []);
+
 
   const handleLogout = () => {
     localStorage.clear(); // or remove specific keys

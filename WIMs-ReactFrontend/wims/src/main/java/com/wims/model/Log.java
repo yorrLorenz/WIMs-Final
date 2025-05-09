@@ -3,7 +3,7 @@ package com.wims.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
-
+import java.util.UUID;
 @Entity
 @Table(name = "logs")
 public class Log {
@@ -38,6 +38,13 @@ public class Log {
     private List<Log> relatedLogs;
 
     // --- Constructors ---
+
+    @PrePersist
+    public void generateGroupIdIfRestocked() {
+        if ("Restocked".equalsIgnoreCase(action) && (groupId == null || groupId.isBlank())) {
+            this.groupId = UUID.randomUUID().toString();
+        }
+    }
 
     public Log() {}
 
