@@ -1,125 +1,108 @@
-// src/pages/CreateAccountPage.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef } from "react";
+import Webcam from "react-webcam";
 import { useNavigate } from "react-router-dom";
 
 const CreateAccountPage = () => {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     username: "",
     password: "",
-    role: "ADMIN",
+    role: "CLERK",
     warehouse: "",
   });
-
-  const [warehouses, setWarehouses] = useState([]);
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    fetch("http://localhost:8080/api/accounts/warehouses", {
-      credentials: "include",
-    })
-      .then((res) => res.json())
-      .then((data) => setWarehouses(data))
-      .catch((err) => {
-        console.error("Error loading warehouses:", err);
-        setWarehouses([]);
-      });
-  }, []);
+  const [imageFile, setImageFile] = useState(null);
+  const [useWebcam, setUseWebcam] = useState(false);
+  const webcamRef = useRef(null);
 
   const handleChange = (e) => {
-    setForm((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const captureFromWebcam = () => {
+    const imageSrc = webcamRef.current.getScreenshot();
+    fetch(imageSrc)
+      .then(res => res.blob())
+      .then(blob => {
+        const file = new File([blob], "webcam.jpg", { type: "image/jpeg" });
+        setImageFile(file);
+      });
+  };
+
+  const handleFileChange = (e) => {
+    setImageFile(e.target.files[0]);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage("");
-    setError("");
-
-    if (!form.username || !form.password || !form.role) {
-      setError("All fields are required.");
-      return;
-    }
-
-    if (form.role === "CLERK" && !form.warehouse) {
-      setError("Clerk must select a warehouse.");
-      return;
+    const formData = new FormData();
+    formData.append("account", new Blob([JSON.stringify(form)], { type: "application/json" }));
+    if (imageFile) {
+      formData.append("image", imageFile);
     }
 
     try {
       const res = await fetch("http://localhost:8080/api/accounts/create", {
         method: "POST",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: formData,
       });
-
       if (res.ok) {
-        setMessage("Account created successfully!");
-        setTimeout(() => navigate("/select-warehouse"), 1000);
+        navigate("/select-warehouse");
       } else {
-        const text = await res.text();
-        setError(text || "Failed to create account.");
+        const msg = await res.text();
+        alert("Error: " + msg);
       }
     } catch (err) {
-      console.error("Network error:", err);
-      setError("Network error");
+      alert("Failed to create account");
     }
   };
 
   return (
-    <div style={{ padding: "2rem", maxWidth: "500px", margin: "0 auto" }}>
+    <div style={{ padding: "2rem" }}>
       <h2>Create Account</h2>
-
-      {message && <div style={{ color: "green", marginBottom: "1rem" }}>{message}</div>}
-      {error && <div style={{ color: "red", marginBottom: "1rem" }}>{error}</div>}
-
       <form onSubmit={handleSubmit}>
         <label>Username:</label>
-        <input
-          name="username"
-          value={form.username}
-          onChange={handleChange}
-          required
-        /><br /><br />
+        <input type="text" name="username" value={form.username} onChange={handleChange} required /><br />
 
         <label>Password:</label>
-        <input
-          name="password"
-          type="password"
-          value={form.password}
-          onChange={handleChange}
-          required
-        /><br /><br />
+        <input type="password" name="password" value={form.password} onChange={handleChange} required /><br />
 
         <label>Role:</label>
         <select name="role" value={form.role} onChange={handleChange}>
           <option value="ADMIN">Admin</option>
           <option value="CLERK">Clerk</option>
-        </select><br /><br />
+        </select><br />
 
         {form.role === "CLERK" && (
           <>
             <label>Warehouse:</label>
-            <select
-              name="warehouse"
-              value={form.warehouse}
-              onChange={handleChange}
-              required
-            >
-              <option value="">-- Select Warehouse --</option>
-              {warehouses.map((w) => (
-                <option key={w.id} value={w.name}>
-                  {w.name}
-                </option>
-              ))}
-            </select><br /><br />
+            <input type="text" name="warehouse" value={form.warehouse} onChange={handleChange} required /><br />
           </>
         )}
 
+        <label>Profile Picture:</label><br />
+        <input type="file" accept="image/*" onChange={handleFileChange} disabled={useWebcam} /><br />
+
+        <label>
+          <input type="checkbox" checked={useWebcam} onChange={() => setUseWebcam(!useWebcam)} />
+          Use webcam instead
+        </label><br />
+
+        {useWebcam && (
+          <div>
+            <Webcam
+              audio={false}
+              ref={webcamRef}
+              screenshotFormat="image/jpeg"
+              width={320}
+              height={240}
+            />
+            <button type="button" onClick={captureFromWebcam}>Capture</button>
+          </div>
+        )}
+
+        <br />
         <button type="submit">Create Account</button>
       </form>
     </div>

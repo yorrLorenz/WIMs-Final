@@ -1,4 +1,5 @@
 package com.wims.dto;
+import com.wims.dto.AccountForm;
 
 public class AccountForm {
     private String username;
