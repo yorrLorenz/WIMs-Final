@@ -1,55 +1,99 @@
 import React, { useState } from "react";
+import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
 import { useNavigate } from "react-router-dom";
 
+// Fix default marker icon bug in Leaflet
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  iconRetinaUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  shadowUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+});
+
+const LocationSelector = ({ onLocationSelect }) => {
+  useMapEvents({
+    click(e) {
+      onLocationSelect(e.latlng);
+    },
+  });
+  return null;
+};
+
 const CreateWarehousePage = () => {
-  const [name, setName] = useState("");
-  const [message, setMessage] = useState("");
+  const [warehouseName, setWarehouseName] = useState("");
+  const [location, setLocation] = useState(null);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleCreate = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!location) {
+      setError("Please select a location on the map.");
+      return;
+    }
 
-    const response = await fetch("http://localhost:8080/api/warehouses", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ name }),
-    });
+    const body = {
+      name: warehouseName,
+      latitude: location.lat,
+      longitude: location.lng,
+    };
 
-    if (response.ok) {
-      setMessage("Warehouse created successfully!");
-      setTimeout(() => {
+    try {
+      const res = await fetch("http://localhost:8080/api/warehouses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(body),
+      });
+
+      if (res.ok) {
         navigate("/select-warehouse");
-      }, 1000);
-    } else {
-      const text = await response.text();
-      setMessage(`❌ ${text}`);
+      } else {
+        const msg = await res.text();
+        setError(msg || "Failed to create warehouse");
+      }
+    } catch (err) {
+      console.error("Network error:", err);
+      setError("Network error");
     }
   };
 
   return (
-    <div style={{ textAlign: "center", padding: "2rem" }}>
+    <div style={{ padding: "2rem" }}>
       <h2>Create New Warehouse</h2>
-      <form onSubmit={handleCreate}>
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      <form onSubmit={handleSubmit}>
+        <label>Warehouse Name:</label>
         <input
           type="text"
-          placeholder="Warehouse Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          value={warehouseName}
+          onChange={(e) => setWarehouseName(e.target.value)}
           required
-          style={{ padding: "0.5rem", fontSize: "1rem", width: "300px" }}
         />
-        <br /><br />
-        <button type="submit" style={{ padding: "0.5rem 2rem" }}>
-          Create
-        </button>
+        <br />
+        <br />
+        <label>Select Location on Map:</label>
+        <div style={{ height: "400px", marginBottom: "1rem" }}>
+          <MapContainer
+            center={[12.8797, 121.774]} // Philippines center
+            zoom={5.5}
+            style={{ height: "100%", width: "100%" }}
+          >
+            <TileLayer
+              attribution='&copy; OpenStreetMap contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            <LocationSelector onLocationSelect={setLocation} />
+            {location && <Marker position={location} />}
+          </MapContainer>
+        </div>
+        <button type="submit">Create Warehouse</button>
       </form>
-
-      {message && <p style={{ marginTop: "1rem", color: "green" }}>{message}</p>}
-
-      <button onClick={() => navigate("/select-warehouse")} style={{ marginTop: "2rem" }}>
-        ← Back
-      </button>
     </div>
   );
 };

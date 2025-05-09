@@ -1,6 +1,16 @@
-// src/pages/WarehouseSelectionPage.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { MapContainer, TileLayer, Marker, Popup, Tooltip } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+
+// Fix Leaflet icon path issue
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+});
 
 const WarehouseSelectionPage = () => {
   const [warehouses, setWarehouses] = useState([]);
@@ -22,9 +32,13 @@ const WarehouseSelectionPage = () => {
       });
   }, []);
 
-  const handleSelectWarehouse = (name) => {
-    localStorage.setItem("warehouse", name); // ✅ Store selected warehouse
+  const handleWarehouseClick = (name) => {
     navigate(`/warehouse/${encodeURIComponent(name)}`);
+  };
+
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/");
   };
 
   const handleCreateWarehouse = () => {
@@ -35,54 +49,46 @@ const WarehouseSelectionPage = () => {
     navigate("/create-account");
   };
 
-  const handleAdminDashboard = () => {
-    navigate("/admin-dashboard");
-  };
-
-  const handleLogout = () => {
-    localStorage.clear(); // or remove specific keys
-    navigate("/");
-  };
-  
+  if (loading) return <p>Loading...</p>;
 
   return (
-    <div style={{ textAlign: "center", padding: "2rem" }}>
+    <div style={{ padding: "2rem" }}>
       <h2>Select a Warehouse</h2>
 
-      {loading ? (
-        <p>Loading warehouses...</p>
-      ) : warehouses.length === 0 ? (
-        <p>No warehouses available yet.</p>
-      ) : (
-        warehouses.map((w) => (
-          <button
-            key={w.id}
-            onClick={() => handleSelectWarehouse(w.name)}
-            style={{ margin: "1rem", padding: "1rem 2rem", fontSize: "1rem" }}
-          >
-            {w.name}
-          </button>
-        ))
-      )}
-
-      <hr style={{ margin: "2rem 0" }} />
-
-      <div>
-        <button onClick={handleCreateWarehouse} style={{ margin: "0.5rem" }}>
-          ➕ Create Warehouse
-        </button>
-        <button onClick={handleCreateAccount} style={{ margin: "0.5rem" }}>
-          👤 Create Account
-        </button>
-        <button onClick={handleAdminDashboard} style={{ margin: "0.5rem" }}>
-          📊 Admin Dashboard
-        </button>
-        <button
-          onClick={handleLogout}
-          style={{ margin: "0.5rem", background: "#e74c3c", color: "white" }}
+      <div style={{ height: "500px", marginBottom: "1.5rem" }}>
+        <MapContainer
+          center={[12.8797, 121.774]}
+          zoom={5.5}
+          style={{ height: "100%", width: "100%" }}
         >
-          🚪 Logout
-        </button>
+          <TileLayer
+            attribution='&copy; OpenStreetMap contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          {warehouses.map((wh, idx) => (
+            <Marker
+              key={idx}
+              position={[wh.latitude, wh.longitude]}
+              eventHandlers={{
+                click: () => handleWarehouseClick(wh.name),
+              }}
+            >
+              <Tooltip direction="top" offset={[0, -10]} opacity={1} permanent={false}>
+                {wh.name}
+              </Tooltip>
+              <Popup>
+                <strong>{wh.name}</strong><br />
+                Click to open
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
+      </div>
+
+      <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+        <button onClick={handleCreateWarehouse}>Create Warehouse</button>
+        <button onClick={handleCreateAccount}>Create Account</button>
+        <button onClick={handleLogout}>Logout</button>
       </div>
     </div>
   );

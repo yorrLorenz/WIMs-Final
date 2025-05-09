@@ -36,18 +36,23 @@ public class WarehouseApiController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createWarehouse(@RequestBody Warehouse warehouse) {
-        if (warehouse.getName() == null || warehouse.getName().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body("Warehouse name cannot be empty");
-        }
-
-        if (warehouseRepository.findByName(warehouse.getName()).isPresent()) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Warehouse already exists");
-        }
-
-        warehouse.setName(warehouse.getName().trim());
-        warehouseRepository.save(warehouse);
-        return ResponseEntity.ok("Warehouse created");
+public ResponseEntity<?> createWarehouse(@RequestBody Warehouse warehouse) {
+    if (warehouse.getName() == null || warehouse.getName().trim().isEmpty()) {
+        return ResponseEntity.badRequest().body("Warehouse name cannot be empty");
     }
+
+    if (warehouseRepository.findByName(warehouse.getName()).isPresent()) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body("Warehouse already exists");
+    }
+
+    if (warehouse.getLatitude() == null || warehouse.getLongitude() == null) {
+        return ResponseEntity.badRequest().body("Latitude and Longitude are required");
+    }
+
+    warehouse.setName(warehouse.getName().trim());
+    warehouseRepository.save(warehouse);
+    return ResponseEntity.ok("Warehouse created");
+}
+
 }
 
