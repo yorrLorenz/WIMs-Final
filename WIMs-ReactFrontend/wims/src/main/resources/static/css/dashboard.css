@@ -1,0 +1,72 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f4f4f4;
+}
+
+.top-bar {
+    background: #2a3f54;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 2rem;
+    align-items: center;
+}
+
+.warehouse-name {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.clock {
+    font-size: 1.2rem;
+}
+
+.add-product-btn {
+    background-color: #00b894;
+    color: white;
+    font-size: 1.5rem;
+    padding: 0.4rem 1rem;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+.content {
+    padding: 2rem;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    background: white;
+}
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 0.8rem;
+    text-align: left;
+}
+
+th {
+    background-color: #eee;
+}
+
+details {
+    margin: 0.5rem 0;
+    background-color: #e3f2fd;
+    border-radius: 5px;
+    padding: 0.5rem;
+}
+
+summary {
+    font-weight: bold;
+    cursor: pointer;
+}
+
+details table {
+    width: 100%;
+    margin-top: 0.5rem;
+    border-collapse: collapse;
+}

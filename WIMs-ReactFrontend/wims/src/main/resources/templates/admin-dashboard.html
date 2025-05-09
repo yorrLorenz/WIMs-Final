@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+    <div class="top-bar">
+        <div class="warehouse-name">Admin Dashboard</div>
+        <div class="clock">
+            <span id="time">00:00:00</span>
+            <span id="ampm">AM</span>
+            <div id="date">mm/dd/yyyy</div>
+        </div>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit">Logout</button>
+        </form>
+    </div>
+
+    <div class="content">
+        <h2>All Warehouse Logs</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>Item</th>
+                    <th>Warehouse</th>
+                    <th>Location</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="log : ${logs}">
+                    <td th:text="${#temporals.format(log.dateTime, 'MM/dd/yyyy hh:mm a')}">mm/dd/yyyy</td>
+                    <td th:text="${log.username}">User</td>
+                    <td th:text="${log.action}">Action</td>
+                    <td th:text="${log.item}">Item</td>
+                    <td th:text="${log.warehouse}">Warehouse</td>
+                    <td th:text="${log.location}">Location</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script src="/js/dashboard-time.js" defer></script>
+</body>
+</html>

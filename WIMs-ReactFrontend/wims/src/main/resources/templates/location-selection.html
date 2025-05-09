@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Select Warehouse</title>
+</head>
+<body>
+<h2>Select a Warehouse</h2>
+
+<!-- Dynamic warehouse buttons -->
+<div th:if="${warehouses != null}">
+    <ul>
+        <li th:each="warehouse : ${warehouses}">
+            <form th:action="@{'/warehouse/' + ${warehouse.name}}" method="get">
+                <button type="submit" th:text="${warehouse.name}">Warehouse</button>
+            </form>
+            
+            
+            
+        </li>
+    </ul>
+</div>
+
+<a href="/admin/dashboard" class="admin-btn">Admin Dashboard</a>
+
+
+  
+<!-- Admin options -->
+<form th:action="@{/accounts/create}" method="get">
+    <button type="submit">Create New Account</button>
+</form>
+<form th:action="@{/create-warehouse}" method="get">
+    <button type="submit">Create New Warehouse</button>
+</form>
+
+<br><br>
+<form th:action="@{/logout}" method="post">
+    <button type="submit">Logout</button>
+</form>
+</body>
+</html>

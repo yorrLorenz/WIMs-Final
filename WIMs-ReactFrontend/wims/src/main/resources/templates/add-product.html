@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Add Product</title>
+    <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+    <h2>Add Product to <span th:text="${warehouse.name}">Warehouse Name</span></h2>
+    <form th:action="@{/warehouse/{warehouseId}/products/add(warehouseId=${warehouse.name})}" th:object="${logForm}" method="post">
+        <label>Action:</label>
+        <select th:field="*{action}">
+            <option value="Restocked">Restocked</option>
+            <option value="Removed">Removed</option>
+        </select><br/>
+
+        <label>Item Name:</label>
+        <input type="text" th:field="*{itemName}" required/><br/>
+
+        <label>Warehouse Location:</label>
+        <input type="text" th:field="*{warehouseLocation}" required/><br/>
+
+        <button type="submit">Save</button>
+        <a th:href="@{/warehouse/{warehouseId}(warehouseId=${warehouse.name})}">Cancel</a>
+        <label>Product Group ID:</label>
+<input type="text" th:field="*{groupId}" placeholder="Enter or scan product group ID" required/><br/>
+
+    </form>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Create Account</title>
+</head>
+<body>
+    <h2>Create New Account</h2>
+
+    <form th:action="@{/accounts/create}" th:object="${accountForm}" method="post">
+
+        <label>Username:</label><br>
+        <input type="text" th:field="*{username}" required><br><br>
+
+        <label>Password:</label><br>
+        <input type="password" th:field="*{password}" required><br><br>
+
+        <label>Role:</label><br>
+        <select th:field="*{role}" required>
+            <option value="ADMIN">Admin</option>
+            <option value="CLERK">Clerk</option>
+        </select><br><br>
+
+        <label>Warehouse:</label><br>
+        <select th:field="*{warehouse}" required>
+            <option th:each="w : ${warehouses}" th:value="${w.name}" th:text="${w.name}"></option>
+        </select><br><br>
+
+        <button type="submit">Create Account</button>
+    </form>
+
+    <br>
+    <a th:href="@{/location-selection}">Back</a>
+</body>
+</html>

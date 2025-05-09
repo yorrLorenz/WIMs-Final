@@ -1,0 +1,82 @@
+.sidebar {
+  width: 80px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #2c3e50;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.sidebar-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.sidebar-bottom {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 2rem; /* ✅ Add spacing above bottom edge */
+}
+
+.sidebar-icon {
+  width: 100%;
+  padding: 0.75rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: white;
+  font-size: 1.5rem;
+  transition: background-color 0.2s ease-in-out;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.sidebar-icon:hover {
+  background-color: #34495e;
+  color: #f1c40f;
+}
+
+.sidebar-label {
+  font-size: 0.65rem;
+  margin-top: 0.25rem;
+  display: block;
+  text-align: center;
+  white-space: normal;
+  word-wrap: break-word;
+  max-width: 60px; /* ✅ prevents wide overflow */
+  line-height: 1rem;
+}
+
+
+.logout-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  width: 100%;
+  padding: 0.75rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.sidebar-icon.active {
+  background-color: #34495e;
+  color: #f1c40f;
+}

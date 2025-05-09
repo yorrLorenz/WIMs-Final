@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Create Warehouse</title>
+</head>
+<body>
+    <h2>Create a New Warehouse</h2>
+    <form th:action="@{/create-warehouse}" th:object="${warehouse}" method="post">
+        <input type="text" th:field="*{name}" placeholder="Warehouse Name" required>
+        <button type="submit">Create</button>
+    </form>
+    <a th:href="@{/location-selection}">Back</a>
+</body>
+</html>

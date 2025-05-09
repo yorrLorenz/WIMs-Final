@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Warehouse Dashboard</title>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+<div class="top-bar">
+    <div class="warehouse-name" th:text="${warehouse.name}">Warehouse Name</div>
+    <div class="clock">
+        <span id="time">00:00:00</span>
+        <span id="ampm">AM</span>
+        <div id="date">mm/dd/yyyy</div>
+    </div>
+    <form th:action="@{/logout}" method="post">
+        <button type="submit">Logout</button>
+    </form>
+    <div class="add-button">
+        <a th:href="@{/warehouse/{warehouseId}/products/add(warehouseId=${warehouse.name})}" class="add-product-btn">+</a>
+    </div>
+</div>
+
+<div class="content">
+    <h2>Recent Logs</h2>
+    <table>
+        <thead>
+        <tr>
+            <th></th>
+            <th>Date</th>
+            <th>User</th>
+            <th>Action</th>
+            <th>Item</th>
+            <th>Warehouse</th>
+            <th>Location</th>
+            <th>Edit</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="log : ${logs}">
+            <td>
+                <button type="button" th:onclick="'toggleDetails(\'details-' + ${log.id} + '\')'">☰</button>
+            </td>
+            <td th:text="${#temporals.format(log.dateTime, 'MM/dd/yyyy hh:mm a')}"></td>
+            <td th:text="${log.username}"></td>
+            <td th:text="${log.action}"></td>
+            <td th:text="${log.item}"></td>
+            <td th:text="${log.warehouse}"></td>
+            <td th:text="${log.location}"></td>
+            <td><a th:href="@{'/logs/edit/' + ${log.id}}">✎</a></td>
+        </tr>
+
+        <tr th:if="${log.groupId != null and log.relatedLogs != null and #lists.size(log.relatedLogs) > 1}"
+            th:each="log : ${logs}" th:id="'details-' + ${log.id}" style="display: none;">
+            <td colspan="8">
+                <div>
+                    <strong>Related Transactions for Group:</strong>
+                    <span th:text="${log.groupId}"></span>
+                    <ul>
+                        <li th:each="related : ${log.relatedLogs}"
+                            th:text="${#temporals.format(related.dateTime, 'MM/dd/yyyy hh:mm a')} + ' - ' + related.action + ' by ' + related.username"></li>
+                    </ul>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<script src="/js/dashboard-time.js" defer></script>
+<script>
+    function toggleDetails(id) {
+        const row = document.getElementById(id);
+        if (row && (row.style.display === 'none' || row.style.display === '')) {
+            row.style.display = 'table-row';
+        } else if (row) {
+            row.style.display = 'none';
+        }
+    }
+</script>
+</body>
+</html>
