@@ -51,23 +51,32 @@ public class ProductController {
             log.setItem(request.getItem());
             log.setGroupId(groupId);
 
-            // Create Product state
             Product product = new Product();
             product.setItem(request.getItem());
             product.setGroupId(groupId);
             product.setWarehouse(request.getWarehouse());
             product.setCurrentLocation(request.getLocation());
+            product.setActive(true);
             productRepository.save(product);
 
         } else if ("Removed".equalsIgnoreCase(request.getAction())) {
             log.setItem(request.getItem());
             log.setGroupId(request.getGroupId());
 
-            // Use last known product location
-            productRepository.findByGroupId(request.getGroupId()).ifPresent(product -> {
+            productRepository.findByGroupId(request.getGroupId()).ifPresentOrElse(product -> {
+                if (!product.isActive()) {
+                    throw new RuntimeException("Product not in warehouse");
+                }
+
+                if (!product.getWarehouse().equals(request.getWarehouse())) {
+                    throw new RuntimeException("Product does not belong to this warehouse");
+                }
+
                 log.setLocation(product.getCurrentLocation());
                 product.setActive(false);
                 productRepository.save(product);
+            }, () -> {
+                throw new RuntimeException("Product not found.");
             });
 
         } else if ("Move".equalsIgnoreCase(request.getAction())) {
@@ -79,11 +88,20 @@ public class ProductController {
             log.setItem(previousLogs.get(0).getItem());
             log.setGroupId(request.getGroupId());
 
-            productRepository.findByGroupId(request.getGroupId())
-                .ifPresent(product -> {
-                    product.setCurrentLocation(request.getLocation());
-                    productRepository.save(product);
-                });
+            productRepository.findByGroupId(request.getGroupId()).ifPresentOrElse(product -> {
+                if (!product.isActive()) {
+                    throw new RuntimeException("Product not in warehouse");
+                }
+
+                if (!product.getWarehouse().equals(request.getWarehouse())) {
+                    throw new RuntimeException("Product does not belong to this warehouse");
+                }
+
+                product.setCurrentLocation(request.getLocation());
+                productRepository.save(product);
+            }, () -> {
+                throw new RuntimeException("Product not found.");
+            });
         }
 
         log.setDateTime(LocalDateTime.now());
@@ -95,7 +113,6 @@ public class ProductController {
         String code = warehouse.getCode(); // e.g., AA
         String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("MMdd"));
 
-        // Count logs for today starting with this code+date
         String prefix = code + "-" + date;
         long count = logRepository.countByGroupIdStartingWith(prefix) + 1;
 

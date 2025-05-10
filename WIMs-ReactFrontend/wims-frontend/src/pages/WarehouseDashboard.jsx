@@ -86,21 +86,16 @@ const WarehouseDashboard = () => {
                 <React.Fragment key={log.id}>
                   <tr>
                     <td style={{ textAlign: "center" }}>
-  {log.groupId && (
-    <button className="toggle-btn" onClick={() => toggleExpand(log.id)}>☰</button>
-  )}
-</td>
-
+                      {log.groupId && (
+                        <button className="toggle-btn" onClick={() => toggleExpand(log.id)}>☰</button>
+                      )}
+                    </td>
                     <td>{new Date(log.dateTime).toLocaleString()}</td>
                     <td>{log.username}</td>
                     <td className={`action-cell ${log.action.toLowerCase()}`}>
-                      {log.action === "Restocked"
-                        ? "Restocked"
-                        : log.action === "Removed"
-                        ? "Removed"
-                        : log.action === "Move"
-                        ? "Moved"
-                        : log.action}
+                      {log.action === "Restocked" ? "Restocked" :
+                        log.action === "Removed" ? "Removed" :
+                        log.action === "Move" ? "Moved" : log.action}
                     </td>
                     <td>{log.item}</td>
                     <td>{log.location}</td>
@@ -132,7 +127,6 @@ const WarehouseDashboard = () => {
           </table>
         </div>
 
-        {/* Add Product Modal */}
         {showAddModal && (
           <div className="modal">
             <div className="modal-content">
@@ -170,42 +164,50 @@ const WarehouseDashboard = () => {
                 <>
                   <label>Group ID:</label>
                   <input
-                    name="groupId"
-                    value={formData.groupId}
-                    onChange={async (e) => {
-                      const groupId = e.target.value.trim();
-                      setFormData((prev) => ({ ...prev, groupId }));
+  name="groupId"
+  value={formData.groupId}
+  onChange={async (e) => {
+    const groupId = e.target.value.trim();
+    setFormData((prev) => ({ ...prev, groupId }));
 
-                      try {
-                        const res = await fetch(`http://localhost:8080/api/logs/group/${groupId}`, {
-                          credentials: "include",
-                        });
+    // ✅ New validation
+    if (groupId === "") {
+      toast.error("Group ID cannot be empty");
+      return;
+    }
 
-                        if (res.ok) {
-                          const result = await res.json();
-                          const logs = Array.isArray(result) ? result : [result];
+    try {
+      const res = await fetch(`http://localhost:8080/api/logs/group/${groupId}`, {
+        credentials: "include",
+      });
 
-                          logs.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
-                          const latestValid = logs.find((log) => log.action !== "Removed");
+      if (res.ok) {
+        const result = await res.json();
+        const logs = Array.isArray(result) ? result : [result];
 
-                          if (!latestValid) {
-                            toast.error("No valid logs for this Group ID.");
-                            return;
-                          }
+        logs.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
+        const latestValid = logs.find((log) => log.action !== "Removed");
 
-                          setFormData((prev) => ({
-                            ...prev,
-                            item: latestValid.item,
-                            location: prev.action === "Removed" ? latestValid.location : "",
-                          }));
-                        } else {
-                          toast.error("Group ID not found.");
-                        }
-                      } catch (err) {
-                        toast.error("Error fetching group logs.");
-                      }
-                    }}
-                  />
+        if (!latestValid) {
+          toast.error("No valid logs for this Group ID.");
+          return;
+        }
+
+        setFormData((prev) => ({
+          ...prev,
+          item: latestValid.item,
+          location: prev.action === "Removed" ? latestValid.location : "",
+        }));
+      } else {
+        const errText = await res.text();
+        toast.error("Error: Invalid input ");
+      }
+    } catch (err) {
+      toast.error("Error fetching group logs.");
+    }
+  }}
+/>
+
 
                   <label>Item:</label>
                   <input name="item" value={formData.item} readOnly />
@@ -216,9 +218,7 @@ const WarehouseDashboard = () => {
                       <input
                         name="location"
                         value={formData.location}
-                        onChange={(e) =>
-                          setFormData({ ...formData, location: e.target.value })
-                        }
+                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                       />
                     </>
                   )}

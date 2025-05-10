@@ -4,6 +4,9 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { useNavigate } from "react-router-dom";
 import "./CreateWarehousePage.css";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 
 // Fix default marker icon bug
 delete L.Icon.Default.prototype._getIconUrl;
@@ -30,7 +33,7 @@ const CreateWarehousePage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!location) {
-      alert("Please select a location.");
+      toast.error("Please select a location.");
       return;
     }
 
@@ -51,11 +54,11 @@ const CreateWarehousePage = () => {
       if (res.ok) {
         navigate("/select-warehouse");
       } else {
-        alert("Failed to create warehouse");
+        toast.error("Failed to create warehouse");
       }
     } catch (err) {
       console.error(err);
-      alert("Network error");
+      toast.error("Network error");
     }
   };
 
@@ -88,8 +91,12 @@ const CreateWarehousePage = () => {
           ← Back
         </button>
       </form>
+      <ToastContainer position="top-center" autoClose={3000} />
     </div>
+    
   );
+  
 };
+
 
 export default CreateWarehousePage;

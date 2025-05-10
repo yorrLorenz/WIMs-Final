@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import Webcam from "react-webcam";
 import { useNavigate } from "react-router-dom";
 import "./CreateAccountPage.css";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const CreateAccountPage = () => {
   const navigate = useNavigate();
@@ -64,10 +66,10 @@ const CreateAccountPage = () => {
         navigate("/select-warehouse");
       } else {
         const msg = await res.text();
-        alert("Error: " + msg);
+        toast.error("Error: " + msg);
       }
     } catch (err) {
-      alert("Failed to create account");
+      toast.error("Failed to create account.");
     }
   };
 
@@ -149,7 +151,10 @@ const CreateAccountPage = () => {
 </div>
 
       </form>
+      <ToastContainer position="top-center" autoClose={3000} />
+
     </div>
+    
   );
 };
 
