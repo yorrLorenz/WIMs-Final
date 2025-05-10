@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Popup, Tooltip } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import "./WarehouseSelectionPage.css";
 
 // Fix Leaflet icon path issue
 delete L.Icon.Default.prototype._getIconUrl;
@@ -49,18 +50,14 @@ const WarehouseSelectionPage = () => {
     navigate("/create-account");
   };
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <p className="page-container">Loading...</p>;
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <h2>Select a Warehouse</h2>
+    <div className="page-container">
+      <h2 className="page-title">Select Warehouse</h2>
 
-      <div style={{ height: "500px", marginBottom: "1.5rem" }}>
-        <MapContainer
-          center={[12.8797, 121.774]}
-          zoom={5.5}
-          style={{ height: "100%", width: "100%" }}
-        >
+      <div className="map-container">
+        <MapContainer center={[12.8797, 121.774]} zoom={5.5} style={{ height: "100%", width: "100%" }}>
           <TileLayer
             attribution='&copy; OpenStreetMap contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -73,7 +70,7 @@ const WarehouseSelectionPage = () => {
                 click: () => handleWarehouseClick(wh.name),
               }}
             >
-              <Tooltip direction="top" offset={[0, -10]} opacity={1} permanent={false}>
+              <Tooltip direction="top" offset={[0, -10]} opacity={1}>
                 {wh.name}
               </Tooltip>
               <Popup>
@@ -85,10 +82,9 @@ const WarehouseSelectionPage = () => {
         </MapContainer>
       </div>
 
-      <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+      <div className="button-group">
         <button onClick={handleCreateWarehouse}>Create Warehouse</button>
         <button onClick={handleCreateAccount}>Create Account</button>
-        <button onClick={handleLogout}>Logout</button>
       </div>
     </div>
   );

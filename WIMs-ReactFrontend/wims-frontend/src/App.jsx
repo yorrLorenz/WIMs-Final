@@ -32,17 +32,17 @@ function App() {
 
 <Route path="/create-warehouse" element={
   <PrivateRoute>
-   
+   <DashboardLayout>
     <CreateWarehousePage />
-    
+     </DashboardLayout>
   </PrivateRoute>
 } />
 
 <Route path="/create-account" element={
   <PrivateRoute>
-  
+  <DashboardLayout>
     <CreateAccountPage />
-   
+   </DashboardLayout>
   </PrivateRoute>
 } />
 

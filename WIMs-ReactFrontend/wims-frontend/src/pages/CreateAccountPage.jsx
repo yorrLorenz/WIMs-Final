@@ -1,6 +1,7 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Webcam from "react-webcam";
 import { useNavigate } from "react-router-dom";
+import "./CreateAccountPage.css";
 
 const CreateAccountPage = () => {
   const navigate = useNavigate();
@@ -10,9 +11,18 @@ const CreateAccountPage = () => {
     role: "CLERK",
     warehouse: "",
   });
+  const [warehouses, setWarehouses] = useState([]);
   const [imageFile, setImageFile] = useState(null);
   const [useWebcam, setUseWebcam] = useState(false);
+  const [captured, setCaptured] = useState(false);
   const webcamRef = useRef(null);
+
+  useEffect(() => {
+    fetch("http://localhost:8080/api/warehouses", { credentials: "include" })
+      .then((res) => res.json())
+      .then((data) => setWarehouses(data))
+      .catch((err) => console.error("Failed to load warehouses", err));
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,15 +32,17 @@ const CreateAccountPage = () => {
   const captureFromWebcam = () => {
     const imageSrc = webcamRef.current.getScreenshot();
     fetch(imageSrc)
-      .then(res => res.blob())
-      .then(blob => {
+      .then((res) => res.blob())
+      .then((blob) => {
         const file = new File([blob], "webcam.jpg", { type: "image/jpeg" });
         setImageFile(file);
+        setCaptured(true);
       });
   };
 
   const handleFileChange = (e) => {
     setImageFile(e.target.files[0]);
+    setCaptured(false);
   };
 
   const handleSubmit = async (e) => {
@@ -47,6 +59,7 @@ const CreateAccountPage = () => {
         credentials: "include",
         body: formData,
       });
+
       if (res.ok) {
         navigate("/select-warehouse");
       } else {
@@ -59,51 +72,82 @@ const CreateAccountPage = () => {
   };
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <h2>Create Account</h2>
-      <form onSubmit={handleSubmit}>
-        <label>Username:</label>
-        <input type="text" name="username" value={form.username} onChange={handleChange} required /><br />
+    <div className="account-container">
+      <h2 className="account-title">Create Account</h2>
+      <form className="account-form" onSubmit={handleSubmit}>
+        <div className="form-left">
+          <label>Username</label>
+          <input type="text" name="username" value={form.username} onChange={handleChange} required />
 
-        <label>Password:</label>
-        <input type="password" name="password" value={form.password} onChange={handleChange} required /><br />
+          <label>Password</label>
+          <input type="password" name="password" value={form.password} onChange={handleChange} required />
 
-        <label>Role:</label>
-        <select name="role" value={form.role} onChange={handleChange}>
-          <option value="ADMIN">Admin</option>
-          <option value="CLERK">Clerk</option>
-        </select><br />
+          <label>Role</label>
+          <select name="role" value={form.role} onChange={handleChange}>
+            <option value="CLERK">Clerk</option>
+            <option value="ADMIN">Admin</option>
+          </select>
 
-        {form.role === "CLERK" && (
-          <>
-            <label>Warehouse:</label>
-            <input type="text" name="warehouse" value={form.warehouse} onChange={handleChange} required /><br />
-          </>
-        )}
+          {form.role === "CLERK" && (
+            <>
+              <label>Warehouse</label>
+              <select name="warehouse" value={form.warehouse} onChange={handleChange} required>
+                <option value="">-- Select Warehouse --</option>
+                {warehouses.map((wh) => (
+                  <option key={wh.id} value={wh.name}>
+                    {wh.name}
+                  </option>
+                ))}
+              </select>
+            </>
+          )}
+        </div>
 
-        <label>Profile Picture:</label><br />
-        <input type="file" accept="image/*" onChange={handleFileChange} disabled={useWebcam} /><br />
+        <div className="form-right">
+          <label>Profile Picture</label>
+          <input type="file" onChange={handleFileChange} disabled={useWebcam} />
+          <label className="checkbox-label">
+            <input type="checkbox" checked={useWebcam} onChange={() => setUseWebcam(!useWebcam)} />
+            Use webcam instead
+          </label>
 
-        <label>
-          <input type="checkbox" checked={useWebcam} onChange={() => setUseWebcam(!useWebcam)} />
-          Use webcam instead
-        </label><br />
+          {useWebcam && (
+            <div className="webcam-box">
+              <Webcam
+                audio={false}
+                ref={webcamRef}
+                screenshotFormat="image/jpeg"
+                width={300}
+                height={220}
+              />
+            </div>
+          )}
 
-        {useWebcam && (
-          <div>
-            <Webcam
-              audio={false}
-              ref={webcamRef}
-              screenshotFormat="image/jpeg"
-              width={320}
-              height={240}
-            />
-            <button type="button" onClick={captureFromWebcam}>Capture</button>
-          </div>
-        )}
+          {useWebcam && (
+            <>
+              <button type="button" className="brown-btn" onClick={captureFromWebcam}>
+                Capture
+              </button>
+              {captured && <p className="captured-indicator">✅ Image Captured</p>}
+            </>
+          )}
+        </div>
 
-        <br />
-        <button type="submit">Create Account</button>
+        <div className="form-actions">
+  <div className="form-button">
+    <button type="submit" className="brown-btn wide">Create Account</button>
+  </div>
+  <div className="form-button">
+    <button
+      type="button"
+      className="brown-btn back"
+      onClick={() => navigate("/select-warehouse")}
+    >
+      ← Back
+    </button>
+  </div>
+</div>
+
       </form>
     </div>
   );

@@ -1,70 +1,79 @@
+// src/pages/LoginPage.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../components/Login.css";
+import "./LoginPage.css";
 
 const LoginPage = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [form, setForm] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-  
     try {
       const res = await fetch("http://localhost:8080/api/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
         credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
       });
-  
+
       if (res.ok) {
         const data = await res.json();
         localStorage.setItem("auth", "true");
         localStorage.setItem("role", data.role);
-        localStorage.setItem("username", username);
-  
-        if (data.role === "ADMIN") {
-          navigate("/select-warehouse"); // instead of "/admin-dashboard"
-        } else {
+        localStorage.setItem("username", form.username);
+        if (data.assignedWarehouse) {
           localStorage.setItem("warehouse", data.assignedWarehouse);
           navigate(`/warehouse/${encodeURIComponent(data.assignedWarehouse)}`);
+        } else {
+          navigate("/select-warehouse");
         }
-        
       } else {
-        const errorText = await res.text();
-        setError(`Login failed: ${errorText}`);
-        console.error("Login error response:", errorText);
+        const msg = await res.json();
+        setError(msg.message || "Login failed");
       }
     } catch (err) {
-      console.error("Login failed:", err);
-      setError(`An error occurred: ${err.message}`);
+      console.error("Login error", err);
+      setError("Network error");
     }
   };
-  
 
   return (
-    <div className="login-container">
-      <div className="login-card">
-        <h2>Login to WIMS</h2>
-        {error && <div className="login-error">{error}</div>}
-        <form onSubmit={handleLogin}>
+    <div className="login-page">
+      <div className="login-left">
+        <div className="logo-section">
+          <img src="/logo.png" alt="WIMS Logo" className="logo-image" />
+          <h1>WIMS</h1>
+          <p>Warehouse Inventory<br />Management System</p>
+        </div>
+      </div>
+      <div className="login-right">
+        <form onSubmit={handleSubmit} className="login-form">
+          <h2>Login to WIMS</h2>
+          <div className="underline"></div>
+          {error && <div className="login-error">{error}</div>}
           <input
             type="text"
+            name="username"
             placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            value={form.username}
+            onChange={handleChange}
             required
           />
           <input
             type="password"
+            name="password"
             placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={form.password}
+            onChange={handleChange}
             required
           />
-          <button type="submit">Login</button>
+          <button type="submit">Log In</button>
         </form>
       </div>
     </div>

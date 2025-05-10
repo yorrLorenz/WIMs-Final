@@ -17,6 +17,7 @@ const CalendarPage = () => {
   const [logs, setLogs] = useState([]);
 
   const isAdmin = new URLSearchParams(window.location.search).get("admin") === "true";
+const warehouse = localStorage.getItem("warehouse");
 
   const days = eachDayOfInterval({
     start: startOfMonth(currentMonth),
@@ -59,7 +60,7 @@ const CalendarPage = () => {
   return (
     <div className="calendar-container">
       <div className="calendar-header">
-        <h2>{isAdmin ? "Admin Calendar" : "Warehouse Calendar"}</h2>
+<h2>{isAdmin ? "Admin Calendar" : `Warehouse: ${warehouse}`}</h2>
         <h3>{format(currentMonth, "MMMM yyyy")}</h3>
         <div>
           <button onClick={handlePrevMonth}>←</button>
@@ -92,7 +93,8 @@ const CalendarPage = () => {
       </div>
 
       <div className="log-section">
-        <h3>Logs for {format(selectedDate, "PPP")}</h3>
+       <h3 className="log-heading">Logs for {format(selectedDate, "PPP")}</h3>
+
         <table>
           <thead>
             <tr>

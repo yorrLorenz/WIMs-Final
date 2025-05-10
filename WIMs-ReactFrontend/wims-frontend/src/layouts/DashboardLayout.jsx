@@ -4,7 +4,7 @@ import Sidebar from "../components/Sidebar";
 
 const DashboardLayout = ({ children }) => {
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
+    <div style={{ display: "flex", minHeight: "95vh" }}>
       <Sidebar />
       <main style={{ marginLeft: "60px", padding: "1rem", width: "100%" }}>
         {children}

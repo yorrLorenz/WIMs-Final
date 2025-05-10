@@ -1,0 +1,59 @@
+.page-container {
+  font-family: 'Inter', sans-serif;
+  background-color: white;
+  height: 97vh;
+  box-sizing: border-box;
+  padding: 1.5rem 2rem;
+  overflow: hidden; /* prevent scrollbar */
+  display: flex;
+  flex-direction: column;
+}
+
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: #222;
+  position: relative;
+}
+
+.page-title::after {
+  content: "";
+  display: block;
+  width: 350px;
+  height: 3px;
+  background-color: #432e1b;
+  margin-top: 8px;
+}
+
+.map-container {
+  width: 100%;
+  height: 750px;
+  border: 2px solid black;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  margin-bottom: 2rem;
+}
+
+.button-group {
+  display: flex;
+  gap: 1rem;
+}
+
+.button-group button {
+  background-color: #432e1b;
+  color: white;
+  font-weight: bold;
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.button-group button:hover {
+  background-color: #7e532d;
+}
