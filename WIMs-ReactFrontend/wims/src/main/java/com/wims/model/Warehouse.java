@@ -20,8 +20,21 @@ public class Warehouse {
     @Column(nullable = false)
     private Double longitude;
 
+    @Column(unique = true)
+    private String code;
+
     // --- Getters and Setters ---
 
+     public void setCode(String code) {
+        this.code = code;
+
+    } 
+
+    public String getCode() {
+        return code;
+    }
+
+    
     public Long getId() {
         return id;
     }

@@ -111,7 +111,7 @@ const warehouse = localStorage.getItem("warehouse");
                 <tr key={log.id}>
                   <td>{new Date(log.dateTime).toLocaleTimeString()}</td>
                   <td>{log.username}</td>
-                  <td>{log.action}</td>
+                  <td className={`action-cell ${log.action.toLowerCase()}`}>{log.action}</td>
                   <td>{log.item}</td>
                   {isAdmin && <td>{log.warehouse}</td>}
                 </tr>

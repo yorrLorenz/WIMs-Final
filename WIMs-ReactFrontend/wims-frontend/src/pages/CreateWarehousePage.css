@@ -2,7 +2,7 @@
   padding: 2rem;
   font-family: 'Inter', sans-serif;
   background-color: white;
-  min-height: 98vh;
+  min-height: 95vh;
   box-sizing: border-box;
 }
 
@@ -24,7 +24,7 @@
 }
 
 .simple-map {
-  height: 400px;
+  height: 750px;
   border: 2px solid black;
   border-radius: 10px;
   overflow: hidden;

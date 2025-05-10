@@ -1,0 +1,197 @@
+.admin-dashboard-container {
+  padding: 2rem;
+  font-family: Arial, sans-serif;
+  background: white;
+  min-height: 88vh;
+}
+
+.top-bar {
+  background: #97693d;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+}
+
+.warehouse-name {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.clock {
+  font-size: 1.2rem;
+}
+
+.content {
+  padding: 1rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  background: white;
+}
+
+.dashboard-table th,
+.dashboard-table td {
+  border: 1px solid #ccc;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.dashboard-table th {
+  background-color: #a77d55;
+  color: white;
+}
+
+/* Set wider date column */
+.dashboard-table th:nth-child(2),
+.dashboard-table td:nth-child(2) {
+  width: 220px;
+}
+
+/* Action colors */
+.dashboard-table td.restocked {
+  color: #2ecc71;
+  font-weight: bold;
+  text-transform: capitalize;
+}
+.dashboard-table td.removed {
+  color: #e74c3c;
+  font-weight: bold;
+  text-transform: capitalize;
+}
+.dashboard-table td.move {
+  color: #f1c40f;
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+/* Toggle button */
+.toggle-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #97693d;
+}
+
+.toggle-btn:hover {
+  color: #432e1b;
+}
+
+.dashboard-table ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+.top-bar {
+  background: #97693d;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  position: relative;
+}
+
+.top-left {
+  font-size: 1.5rem;
+  font-weight: bold;
+  flex: 1;
+}
+
+.top-center {
+  text-align: center;
+  font-size: 1.2rem;
+  flex: 1;
+}
+
+.top-right {
+  display: flex;
+  justify-content: flex-end;
+  flex: 1;
+}
+
+.search-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: white;
+  cursor: pointer;
+}
+
+.search-btn:hover {
+  color: #f1c40f;
+}
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.modal-content h3 {
+  margin-bottom: 1rem;
+}
+
+.modal-content input {
+  width: 100%;
+  padding: 0.7rem;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.modal-content button {
+  margin-right: 0.5rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  background: #97693d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+
+.modal-content .close-btn {
+  background: #ccc;
+  color: black;
+}
+
+.search-results {
+  margin-top: 1rem;
+  background: #f9f9f9;
+  padding: 1rem;
+  border-radius: 5px;
+}
+
+.error-text {
+  color: red;
+  margin-top: 0.5rem;
+}
+

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+
 @Entity
 @Table(name = "logs")
 public class Log {
@@ -33,7 +34,7 @@ public class Log {
     @Column(name = "group_id")
     private String groupId;
 
-    // 🔽 Not stored in DB, used for Thymeleaf to display related logs
+    // 🔽 Not stored in DB, used for display purposes
     @Transient
     private List<Log> relatedLogs;
 
@@ -46,7 +47,8 @@ public class Log {
         }
     }
 
-    public Log() {}
+    public Log() {
+    }
 
     public Log(LocalDateTime dateTime, String username, String action, String item, String warehouse, String location) {
         this.dateTime = dateTime;
@@ -55,6 +57,18 @@ public class Log {
         this.item = item;
         this.warehouse = warehouse;
         this.location = location;
+    }
+
+    // ✅ Full constructor for data seeding (TestDataLoader)
+    public Log(Long id, LocalDateTime dateTime, String username, String action, String item, String warehouse, String location, String groupId) {
+        this.id = id;
+        this.dateTime = dateTime;
+        this.username = username;
+        this.action = action;
+        this.item = item;
+        this.warehouse = warehouse;
+        this.location = location;
+        this.groupId = groupId;
     }
 
     // --- Getters & Setters ---

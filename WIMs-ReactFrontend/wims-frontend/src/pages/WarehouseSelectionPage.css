@@ -1,7 +1,7 @@
 .page-container {
   font-family: 'Inter', sans-serif;
   background-color: white;
-  height: 97vh;
+  height: 95vh;
   box-sizing: border-box;
   padding: 1.5rem 2rem;
   overflow: hidden; /* prevent scrollbar */

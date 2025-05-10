@@ -11,9 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
-import java.util.List;
-
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/products")
@@ -27,7 +25,7 @@ import java.util.List;
 public class ProductController {
 
     @Autowired
-private ProductRepository productRepository;
+    private ProductRepository productRepository;
 
     @Autowired
     private LogRepository logRepository;
@@ -36,75 +34,72 @@ private ProductRepository productRepository;
     private WarehouseRepository warehouseRepository;
 
     @PostMapping("/add")
-public String addProduct(@RequestBody ProductRequest request) {
-    Optional<Warehouse> warehouse = warehouseRepository.findByName(request.getWarehouse());
-    if (warehouse.isEmpty()) throw new RuntimeException("Warehouse not found");
+    public String addProduct(@RequestBody ProductRequest request) {
+        Optional<Warehouse> warehouseOpt = warehouseRepository.findByName(request.getWarehouse());
+        if (warehouseOpt.isEmpty()) throw new RuntimeException("Warehouse not found");
 
-    Log log = new Log();
-    log.setUsername(request.getUsername());
-    log.setAction(request.getAction());
-    log.setWarehouse(request.getWarehouse());
-    log.setLocation(request.getLocation());
+        Warehouse warehouse = warehouseOpt.get();
 
-    if ("Restocked".equalsIgnoreCase(request.getAction())) {
-    String groupId = generateCustomGroupId(request.getWarehouse());
-    log.setItem(request.getItem());
-    log.setGroupId(groupId);
+        Log log = new Log();
+        log.setUsername(request.getUsername());
+        log.setAction(request.getAction());
+        log.setWarehouse(request.getWarehouse());
+        log.setLocation(request.getLocation());
 
-    // Create Product state
-    Product product = new Product();
-    product.setItem(request.getItem());
-    product.setGroupId(groupId);
-    product.setWarehouse(request.getWarehouse());
-    product.setCurrentLocation(request.getLocation());
-    productRepository.save(product);
+        if ("Restocked".equalsIgnoreCase(request.getAction())) {
+            String groupId = generateCustomGroupId(warehouse);
+            log.setItem(request.getItem());
+            log.setGroupId(groupId);
 
-
-    } else if ("Removed".equalsIgnoreCase(request.getAction())) {
-    log.setItem(request.getItem());
-    log.setGroupId(request.getGroupId());
-
-    // ✅ Get current product state and use latest known location
-    productRepository.findByGroupId(request.getGroupId()).ifPresent(product -> {
-        log.setLocation(product.getCurrentLocation()); // ✅ use latest location
-        product.setActive(false); // ✅ mark it removed
-        productRepository.save(product);
-    });
-}
-
- else if ("Move".equalsIgnoreCase(request.getAction())) {
-    List<Log> previousLogs = logRepository.findByGroupId(request.getGroupId());
-    if (previousLogs.isEmpty()) {
-        throw new RuntimeException("Group ID not found");
-    }
-
-    log.setItem(previousLogs.get(0).getItem());
-    log.setGroupId(request.getGroupId());
-
-    // Update product location
-    productRepository.findByGroupId(request.getGroupId())
-        .ifPresent(product -> {
+            // Create Product state
+            Product product = new Product();
+            product.setItem(request.getItem());
+            product.setGroupId(groupId);
+            product.setWarehouse(request.getWarehouse());
             product.setCurrentLocation(request.getLocation());
             productRepository.save(product);
-        });
-}
 
+        } else if ("Removed".equalsIgnoreCase(request.getAction())) {
+            log.setItem(request.getItem());
+            log.setGroupId(request.getGroupId());
 
-    log.setDateTime(LocalDateTime.now());
-    logRepository.save(log);
-    return "Product logged successfully";
-}
+            // Use last known product location
+            productRepository.findByGroupId(request.getGroupId()).ifPresent(product -> {
+                log.setLocation(product.getCurrentLocation());
+                product.setActive(false);
+                productRepository.save(product);
+            });
 
+        } else if ("Move".equalsIgnoreCase(request.getAction())) {
+            List<Log> previousLogs = logRepository.findByGroupId(request.getGroupId());
+            if (previousLogs.isEmpty()) {
+                throw new RuntimeException("Group ID not found");
+            }
 
-    private String generateCustomGroupId(String warehouseName) {
-        String datePart = LocalDateTime.now().format(DateTimeFormatter.ofPattern("MMdd"));
-        long todayCount = logRepository.countByWarehouseAndDateTimeBetween(
-            warehouseName,
-            LocalDateTime.now().toLocalDate().atStartOfDay(),
-            LocalDateTime.now().toLocalDate().atTime(23,59,59)
-        ) + 1;
+            log.setItem(previousLogs.get(0).getItem());
+            log.setGroupId(request.getGroupId());
 
-        return String.format("ID-%s-%04d", datePart, todayCount);
+            productRepository.findByGroupId(request.getGroupId())
+                .ifPresent(product -> {
+                    product.setCurrentLocation(request.getLocation());
+                    productRepository.save(product);
+                });
+        }
+
+        log.setDateTime(LocalDateTime.now());
+        logRepository.save(log);
+        return "Product logged successfully";
+    }
+
+    private String generateCustomGroupId(Warehouse warehouse) {
+        String code = warehouse.getCode(); // e.g., AA
+        String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("MMdd"));
+
+        // Count logs for today starting with this code+date
+        String prefix = code + "-" + date;
+        long count = logRepository.countByGroupIdStartingWith(prefix) + 1;
+
+        return String.format("%s-%04d", prefix, count);
     }
 
     public static class ProductRequest {
@@ -115,7 +110,6 @@ public String addProduct(@RequestBody ProductRequest request) {
         private String location;
         private String groupId;
 
-        // Getters and setters
         public String getUsername() { return username; }
         public void setUsername(String username) { this.username = username; }
 

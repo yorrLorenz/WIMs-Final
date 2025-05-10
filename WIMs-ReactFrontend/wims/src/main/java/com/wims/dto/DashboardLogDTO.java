@@ -14,6 +14,8 @@ public class DashboardLogDTO {
     private String groupId;
     private List<DashboardLogDTO> relatedLogs;
 
+    
+
     // Constructor (without relatedLogs)
     public DashboardLogDTO(Long id,
                            LocalDateTime dateTime,

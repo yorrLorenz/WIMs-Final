@@ -31,11 +31,12 @@ public class AdminApiController {
     }
 
     @GetMapping("/logs")
-    public DashboardResponseDTO getAllLogsForAdmin() {
-        List<Log> logs = logRepository.findAllByOrderByDateTimeDesc();
+public DashboardResponseDTO getAllLogsForAdmin() {
+    List<Log> logs = logRepository.findAllByOrderByDateTimeDesc();
 
-        List<DashboardLogDTO> dtos = logs.stream()
-            .map(log -> new DashboardLogDTO(
+    List<DashboardLogDTO> dtos = logs.stream()
+        .map(log -> {
+            DashboardLogDTO dto = new DashboardLogDTO(
                 log.getId(),
                 log.getDateTime(),
                 log.getUsername(),
@@ -44,11 +45,33 @@ public class AdminApiController {
                 log.getWarehouse(),
                 log.getLocation(),
                 log.getGroupId()
-            ))
-            .collect(Collectors.toList());
+            );
 
-        return new DashboardResponseDTO("All Warehouses", dtos);
-    }
+            if (log.getGroupId() != null && !log.getGroupId().isBlank()) {
+                List<DashboardLogDTO> related = logRepository.findByGroupId(log.getGroupId())
+                    .stream()
+                    .map(r -> new DashboardLogDTO(
+                        r.getId(),
+                        r.getDateTime(),
+                        r.getUsername(),
+                        r.getAction(),
+                        r.getItem(),
+                        r.getWarehouse(),
+                        r.getLocation(),
+                        r.getGroupId()
+                    ))
+                    .collect(Collectors.toList());
+
+                dto.setRelatedLogs(related);
+            }
+
+            return dto;
+        })
+        .collect(Collectors.toList());
+
+    return new DashboardResponseDTO("All Warehouses", dtos);
+}
+
    
 
 }

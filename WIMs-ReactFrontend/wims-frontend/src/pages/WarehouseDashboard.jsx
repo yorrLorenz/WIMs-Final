@@ -19,10 +19,9 @@ const WarehouseDashboard = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
-    fetch(
-      `http://localhost:8080/api/dashboard/${encodeURIComponent(warehouseId)}`,
-      { credentials: "include" }
-    )
+    fetch(`http://localhost:8080/api/dashboard/${encodeURIComponent(warehouseId)}`, {
+      credentials: "include",
+    })
       .then((res) => res.json())
       .then((data) => setLogs(data.logs))
       .catch((err) => console.error(err));
@@ -38,20 +37,18 @@ const WarehouseDashboard = () => {
   };
 
   const getModalTitle = () => {
-    if (formData.action === "Restocked") return "Add Product";
-    if (formData.action === "Removed") return "Remove Product";
-    if (formData.action === "Move") return "Move Product";
-    return "Transaction";
+    switch (formData.action) {
+      case "Restocked": return "Add Product";
+      case "Removed": return "Remove Product";
+      case "Move": return "Move Product";
+      default: return "Transaction";
+    }
   };
 
   const validateForm = () => {
-    if (formData.action === "Restocked") {
-      return formData.item && formData.location;
-    } else if (formData.action === "Removed") {
-      return formData.groupId;
-    } else if (formData.action === "Move") {
-      return formData.groupId && formData.location;
-    }
+    if (formData.action === "Restocked") return formData.item && formData.location;
+    if (formData.action === "Removed") return formData.groupId;
+    if (formData.action === "Move") return formData.groupId && formData.location;
     return true;
   };
 
@@ -66,20 +63,17 @@ const WarehouseDashboard = () => {
               month: "short",
               day: "numeric",
               year: "numeric",
-            })}{" "}
-            • {currentTime.toLocaleTimeString()}
+            })} • {currentTime.toLocaleTimeString()}
           </div>
-          <button className="add-product-btn" onClick={() => setShowAddModal(true)}>
-            +
-          </button>
+          <button className="add-product-btn" onClick={() => setShowAddModal(true)}>+</button>
         </div>
 
         <div className="content">
           <h2>Recent Logs</h2>
-          <table>
+          <table className="dashboard-table">
             <thead>
               <tr>
-                <th></th>
+                <th style={{ textAlign: "center" }}></th>
                 <th>Date</th>
                 <th>User</th>
                 <th>Action</th>
@@ -91,16 +85,12 @@ const WarehouseDashboard = () => {
               {logs.map((log) => (
                 <React.Fragment key={log.id}>
                   <tr>
-                    <td>
-                      {log.groupId && (
-                        <button
-                          className="expand-btn"
-                          onClick={() => toggleExpand(log.id)}
-                        >
-                          ☰
-                        </button>
-                      )}
-                    </td>
+                    <td style={{ textAlign: "center" }}>
+  {log.groupId && (
+    <button className="toggle-btn" onClick={() => toggleExpand(log.id)}>☰</button>
+  )}
+</td>
+
                     <td>{new Date(log.dateTime).toLocaleString()}</td>
                     <td>{log.username}</td>
                     <td className={`action-cell ${log.action.toLowerCase()}`}>
@@ -118,15 +108,14 @@ const WarehouseDashboard = () => {
                   {expanded[log.id] && log.groupId && (
                     <tr>
                       <td colSpan="6">
-                        <div className="related-logs">
+                        <div>
                           <strong>Group ID:</strong> {log.groupId}
                           <ul>
                             {log.relatedLogs?.length ? (
                               log.relatedLogs.map((rLog) => (
                                 <li key={rLog.id}>
-                                  {new Date(rLog.dateTime).toLocaleString()} -{" "}
-                                  {rLog.action} by {rLog.username} (Item: {rLog.item}, Location:{" "}
-                                  {rLog.location})
+                                  {new Date(rLog.dateTime).toLocaleString()} - {rLog.action} by{" "}
+                                  {rLog.username} (Item: {rLog.item}, Location: {rLog.location})
                                 </li>
                               ))
                             ) : (
@@ -143,12 +132,11 @@ const WarehouseDashboard = () => {
           </table>
         </div>
 
+        {/* Add Product Modal */}
         {showAddModal && (
           <div className="modal">
             <div className="modal-content">
-              <h3 style={{ marginTop: 0, marginBottom: "1rem", color: "#432e1b" }}>
-                {getModalTitle()}
-              </h3>
+              <h3>{getModalTitle()}</h3>
 
               <label>Action:</label>
               <select
@@ -173,9 +161,7 @@ const WarehouseDashboard = () => {
                   <input
                     name="location"
                     value={formData.location}
-                    onChange={(e) =>
-                      setFormData({ ...formData, location: e.target.value })
-                    }
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                   />
                 </>
               )}
@@ -187,41 +173,55 @@ const WarehouseDashboard = () => {
                     name="groupId"
                     value={formData.groupId}
                     onChange={async (e) => {
-                      const groupId = e.target.value;
-                      setFormData({ ...formData, groupId });
+                      const groupId = e.target.value.trim();
+                      setFormData((prev) => ({ ...prev, groupId }));
 
                       try {
-                        const res = await fetch(
-                          `http://localhost:8080/api/logs/group/${groupId}`,
-                          { credentials: "include" }
-                        );
+                        const res = await fetch(`http://localhost:8080/api/logs/group/${groupId}`, {
+                          credentials: "include",
+                        });
+
                         if (res.ok) {
-                          const data = await res.json();
+                          const result = await res.json();
+                          const logs = Array.isArray(result) ? result : [result];
+
+                          logs.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
+                          const latestValid = logs.find((log) => log.action !== "Removed");
+
+                          if (!latestValid) {
+                            toast.error("No valid logs for this Group ID.");
+                            return;
+                          }
+
                           setFormData((prev) => ({
                             ...prev,
-                            item: data.item,
-                            location:
-                              formData.action === "Removed" ? data.location : "",
+                            item: latestValid.item,
+                            location: prev.action === "Removed" ? latestValid.location : "",
                           }));
+                        } else {
+                          toast.error("Group ID not found.");
                         }
                       } catch (err) {
-                        toast.error("Failed to fetch group data");
+                        toast.error("Error fetching group logs.");
                       }
                     }}
                   />
+
                   <label>Item:</label>
                   <input name="item" value={formData.item} readOnly />
-                  <label>
-                    {formData.action === "Removed" ? "Location:" : "New Location:"}
-                  </label>
-                  <input
-                    name="location"
-                    value={formData.location}
-                    onChange={(e) =>
-                      setFormData({ ...formData, location: e.target.value })
-                    }
-                    readOnly={formData.action === "Removed"}
-                  />
+
+                  {formData.action === "Move" && (
+                    <>
+                      <label>New Location:</label>
+                      <input
+                        name="location"
+                        value={formData.location}
+                        onChange={(e) =>
+                          setFormData({ ...formData, location: e.target.value })
+                        }
+                      />
+                    </>
+                  )}
                 </>
               )}
 
@@ -234,32 +234,18 @@ const WarehouseDashboard = () => {
 
                   try {
                     const username = localStorage.getItem("username");
-                    const payload = {
-                      ...formData,
-                      warehouse: warehouseId,
-                      username,
-                    };
+                    const payload = { ...formData, warehouse: warehouseId, username };
 
-                    const res = await fetch(
-                      "http://localhost:8080/api/products/add",
-                      {
-                        method: "POST",
-                        credentials: "include",
-                        headers: {
-                          "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify(payload),
-                      }
-                    );
+                    const res = await fetch("http://localhost:8080/api/products/add", {
+                      method: "POST",
+                      credentials: "include",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify(payload),
+                    });
 
                     if (res.ok) {
                       setShowAddModal(false);
-                      setFormData({
-                        action: "Restocked",
-                        item: "",
-                        location: "",
-                        groupId: "",
-                      });
+                      setFormData({ action: "Restocked", item: "", location: "", groupId: "" });
                       toast.success("Transaction added successfully!");
                       window.location.reload();
                     } else {
@@ -278,7 +264,6 @@ const WarehouseDashboard = () => {
           </div>
         )}
       </div>
-
       <ToastContainer position="bottom-right" autoClose={3000} />
     </DashboardLayout>
   );

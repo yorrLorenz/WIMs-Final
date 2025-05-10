@@ -20,7 +20,8 @@ public interface LogRepository extends JpaRepository<Log, Long> {
     List<Log> findByUsernameOrderByDateTimeDesc(String username);
     long countByWarehouseAndDateTimeBetween(String warehouse, LocalDateTime start, LocalDateTime end);
     List<Log> findByGroupId(String groupId);
-   
+   int countByGroupIdStartingWith(String prefix);
+
 
 }
     
