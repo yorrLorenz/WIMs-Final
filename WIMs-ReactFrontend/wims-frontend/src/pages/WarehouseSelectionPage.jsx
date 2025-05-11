@@ -19,7 +19,9 @@ const WarehouseSelectionPage = () => {
   const [warehouses, setWarehouses] = useState([]);
   const [accounts, setAccounts] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [selectedType, setSelectedType] = useState("Accounts");
   const [selectedAccount, setSelectedAccount] = useState(null);
+  const [selectedWarehouse, setSelectedWarehouse] = useState(null);
   const [confirmStep, setConfirmStep] = useState(0);
   const [loading, setLoading] = useState(true);
 
@@ -34,6 +36,7 @@ const WarehouseSelectionPage = () => {
       })
       .catch((err) => {
         console.error("Failed to load warehouses", err);
+        toast.error("Failed to load warehouses");
         setLoading(false);
       });
   }, []);
@@ -55,7 +58,7 @@ const WarehouseSelectionPage = () => {
     navigate("/create-account");
   };
 
-  const openDeleteModal = () => {
+  const openManageModal = () => {
     fetch("http://localhost:8080/api/accounts", { credentials: "include" })
       .then((res) => res.json())
       .then((data) => {
@@ -64,25 +67,31 @@ const WarehouseSelectionPage = () => {
       })
       .catch((err) => {
         console.error("Failed to load accounts", err);
+        toast.error("Failed to load accounts");
       });
   };
 
   const closeModal = () => {
     setShowModal(false);
     setSelectedAccount(null);
+    setSelectedWarehouse(null);
+    setSelectedType("Accounts");
     setConfirmStep(0);
   };
 
   const handleDelete = () => {
     if (confirmStep === 0) {
       setConfirmStep(1);
-    } else {
+      return;
+    }
+
+    if (selectedType === "Accounts" && selectedAccount) {
       fetch(`http://localhost:8080/api/accounts/${selectedAccount.id}`, {
         method: "DELETE",
         credentials: "include",
       })
         .then((res) => {
-          if (!res.ok) throw new Error("Failed to delete");
+          if (!res.ok) throw new Error("Failed to delete account");
           return res.text();
         })
         .then(() => {
@@ -91,6 +100,23 @@ const WarehouseSelectionPage = () => {
           closeModal();
         })
         .catch((err) => toast.error("Error deleting account: " + err.message));
+    }
+
+    if (selectedType === "Warehouses" && selectedWarehouse) {
+      fetch(`http://localhost:8080/api/warehouses/${selectedWarehouse.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error("Failed to delete warehouse");
+          return res.text();
+        })
+        .then(() => {
+          toast.success("Successfully removed warehouse!");
+          setWarehouses((prev) => prev.filter((wh) => wh.id !== selectedWarehouse.id));
+          closeModal();
+        })
+        .catch((err) => toast.error("Error deleting warehouse: " + err.message));
     }
   };
 
@@ -123,47 +149,88 @@ const WarehouseSelectionPage = () => {
       <div className="button-group">
         <button onClick={handleCreateWarehouse}>Create Warehouse</button>
         <button onClick={handleCreateAccount}>Create Account</button>
-        <button onClick={openDeleteModal}>Remove Account</button>
+        <button onClick={openManageModal}>Manage</button>
         <button onClick={handleLogout}>Logout</button>
       </div>
 
       {showModal && (
-  <div className="modal">
-    <div className="modal-content">
-      <h3>Remove Account</h3>
+        <div className="modal">
+          <div className="modal-content">
+            <h3>Manage {selectedType}</h3>
 
-      <select
-        value={selectedAccount?.id || ""}
-        onChange={(e) => {
-          const id = parseInt(e.target.value);
-          const acc = accounts.find((a) => a.id === id);
-          setSelectedAccount(acc);
-          setConfirmStep(0);
-        }}
-      >
-        <option value="">Select Account</option>
-        {accounts.map((acc) => (
-          <option key={acc.id} value={acc.id}>
-            {acc.username} ({acc.role})
-          </option>
-        ))}
-      </select>
+            <label>Type:</label>
+            <select value={selectedType} onChange={(e) => {
+              setSelectedType(e.target.value);
+              setConfirmStep(0);
+              setSelectedAccount(null);
+              setSelectedWarehouse(null);
+            }}>
+              <option value="Accounts">Accounts</option>
+              <option value="Warehouses">Warehouses</option>
+            </select>
 
-      {selectedAccount ? (
-        <>
-          <p>Are you sure you want to remove <strong>{selectedAccount.username}</strong>?</p>
-          <button onClick={handleDelete}>
-            {confirmStep === 0 ? "Confirm Delete" : "Yes, Delete Permanently"}
-          </button>
-          <button onClick={closeModal}>Cancel</button>
-        </>
-      ) : (
-        <button onClick={closeModal}>Cancel</button>
+            {selectedType === "Accounts" && (
+              <>
+                <label>Select Account:</label>
+                <select
+                  value={selectedAccount?.id || ""}
+                  onChange={(e) => {
+                    const id = parseInt(e.target.value);
+                    const acc = accounts.find((a) => a.id === id);
+                    setSelectedAccount(acc);
+                    setConfirmStep(0);
+                  }}
+                >
+                  <option value="">-- Select Account --</option>
+                  {accounts.map((acc) => (
+                    <option key={acc.id} value={acc.id}>
+                      {acc.username} ({acc.role})
+                    </option>
+                  ))}
+                </select>
+              </>
+            )}
+
+            {selectedType === "Warehouses" && (
+              <>
+                <label>Select Warehouse:</label>
+                <select
+                  value={selectedWarehouse?.id || ""}
+                  onChange={(e) => {
+                    const id = parseInt(e.target.value);
+                    const wh = warehouses.find((w) => w.id === id);
+                    setSelectedWarehouse(wh);
+                    setConfirmStep(0);
+                  }}
+                >
+                  <option value="">-- Select Warehouse --</option>
+                  {warehouses.map((wh) => (
+                    <option key={wh.id} value={wh.id}>
+                      {wh.name}
+                    </option>
+                  ))}
+                </select>
+              </>
+            )}
+
+            {(selectedAccount || selectedWarehouse) ? (
+              <>
+                <p>
+                  Are you sure you want to remove <strong>
+                    {selectedAccount?.username || selectedWarehouse?.name}
+                  </strong>?
+                </p>
+                <button onClick={handleDelete}>
+                  {confirmStep === 0 ? "Confirm Delete" : "Yes, Delete Permanently"}
+                </button>
+                <button onClick={closeModal}>Cancel</button>
+              </>
+            ) : (
+              <button onClick={closeModal}>Cancel</button>
+            )}
+          </div>
+        </div>
       )}
-    </div>
-  </div>
-)}
-
     </div>
   );
 };

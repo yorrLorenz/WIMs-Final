@@ -49,8 +49,22 @@ const CreateAccountPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const trimmedUsername = form.username.trim();
+    const trimmedPassword = form.password.trim();
+    if (!trimmedUsername || !trimmedPassword) {
+      toast.error("Username and password cannot be empty.");
+      return;
+    }
+
+    const payload = {
+      ...form,
+      username: trimmedUsername,
+      password: trimmedPassword,
+    };
+
     const formData = new FormData();
-    formData.append("account", new Blob([JSON.stringify(form)], { type: "application/json" }));
+    formData.append("account", new Blob([JSON.stringify(payload)], { type: "application/json" }));
     if (imageFile) {
       formData.append("image", imageFile);
     }
@@ -63,7 +77,10 @@ const CreateAccountPage = () => {
       });
 
       if (res.ok) {
-        navigate("/select-warehouse");
+        toast.success("Account created!");
+        setTimeout(() => {
+          navigate("/select-warehouse");
+        }, 1000);
       } else {
         const msg = await res.text();
         toast.error("Error: " + msg);
@@ -136,25 +153,22 @@ const CreateAccountPage = () => {
         </div>
 
         <div className="form-actions">
-  <div className="form-button">
-    <button type="submit" className="brown-btn wide">Create Account</button>
-  </div>
-  <div className="form-button">
-    <button
-      type="button"
-      className="brown-btn back"
-      onClick={() => navigate("/select-warehouse")}
-    >
-      ← Back
-    </button>
-  </div>
-</div>
-
+          <div className="form-button">
+            <button type="submit" className="brown-btn wide">Create Account</button>
+          </div>
+          <div className="form-button">
+            <button
+              type="button"
+              className="brown-btn back"
+              onClick={() => navigate("/select-warehouse")}
+            >
+              ← Back
+            </button>
+          </div>
+        </div>
       </form>
       <ToastContainer position="top-center" autoClose={3000} />
-
     </div>
-    
   );
 };
 

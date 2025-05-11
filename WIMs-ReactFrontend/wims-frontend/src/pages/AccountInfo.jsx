@@ -5,6 +5,7 @@ import "./AccountInfo.css";
 const AccountInfo = () => {
   const [user, setUser] = useState(null);
   const [logs, setLogs] = useState([]);
+  const [showAll, setShowAll] = useState(false); // ✅ pagination toggle
 
   useEffect(() => {
     fetch("http://localhost:8080/api/accounts/me", {
@@ -75,8 +76,8 @@ const AccountInfo = () => {
             </tr>
           </thead>
           <tbody>
-            {logs.length > 0 ? (
-              logs.map((log, index) => (
+            {(showAll ? logs : logs.slice(0, 10)).length > 0 ? (
+              (showAll ? logs : logs.slice(0, 10)).map((log, index) => (
                 <tr key={index}>
                   <td>{new Date(log.dateTime).toLocaleString()}</td>
                   <td className={log.action.toLowerCase()}>{log.action}</td>
@@ -94,6 +95,14 @@ const AccountInfo = () => {
             )}
           </tbody>
         </table>
+
+        {logs.length > 10 && (
+          <div style={{ textAlign: "center", marginTop: "1rem" }}>
+            <button className="brown-btn" onClick={() => setShowAll((prev) => !prev)}>
+              {showAll ? "Show Less" : "Show All"}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 package com.wims.controller;
 
+import com.wims.model.User;
 import com.wims.model.Warehouse;
 import com.wims.repository.WarehouseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.List;
+import com.wims.repository.UserRepository;
 
 
 
@@ -21,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 
 import java.util.Objects;
+import java.util.Optional;
 
 
 @RestController
@@ -33,6 +36,9 @@ import java.util.Objects;
     allowCredentials = "true"
 )
 public class WarehouseApiController {
+    
+@Autowired
+private UserRepository userRepository;
 
     @Autowired
     private WarehouseRepository warehouseRepository;
@@ -81,6 +87,24 @@ private String generateNextWarehouseCode() {
 
     throw new IllegalStateException("Exhausted warehouse code space (AA-ZZ)");
 }
+@DeleteMapping("/{id}")
+public ResponseEntity<?> deleteWarehouse(@PathVariable Long id) {
+    Optional<Warehouse> warehouseOpt = warehouseRepository.findById(id);
+    if (warehouseOpt.isEmpty()) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Warehouse not found");
+    }
+
+    Warehouse warehouse = warehouseOpt.get();
+    List<User> assignedUsers = userRepository.findByWarehouse(warehouse.getName());
+    if (!assignedUsers.isEmpty()) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body("Cannot delete warehouse assigned to users.");
+    }
+
+    warehouseRepository.deleteById(id);
+    return ResponseEntity.ok("Warehouse deleted successfully");
+}
+
 
 
 }

@@ -7,7 +7,6 @@ import "./CreateWarehousePage.css";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-
 // Fix default marker icon bug
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -32,13 +31,20 @@ const CreateWarehousePage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const trimmedName = warehouseName.trim();
+    if (trimmedName === "") {
+      toast.error("Warehouse name cannot be empty.");
+      return;
+    }
+
     if (!location) {
       toast.error("Please select a location.");
       return;
     }
 
     const body = {
-      name: warehouseName,
+      name: trimmedName,
       latitude: location.lat,
       longitude: location.lng,
     };
@@ -51,14 +57,19 @@ const CreateWarehousePage = () => {
         body: JSON.stringify(body),
       });
 
-      if (res.ok) {
-        navigate("/select-warehouse");
+      if (res.status === 409) {
+        toast.error("Warehouse name already exists.");
+      } else if (res.ok) {
+        toast.success("Warehouse created successfully!");
+        setTimeout(() => {
+          navigate("/select-warehouse");
+        }, 1000);
       } else {
-        toast.error("Failed to create warehouse");
+        toast.error("Failed to create warehouse.");
       }
     } catch (err) {
       console.error(err);
-      toast.error("Network error");
+      toast.error("Network error.");
     }
   };
 
@@ -93,10 +104,7 @@ const CreateWarehousePage = () => {
       </form>
       <ToastContainer position="top-center" autoClose={3000} />
     </div>
-    
   );
-  
 };
-
 
 export default CreateWarehousePage;

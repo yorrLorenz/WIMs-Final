@@ -18,6 +18,7 @@ const WarehouseDashboard = () => {
     units: 1,
   });
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     fetch(`http://localhost:8080/api/dashboard/${encodeURIComponent(warehouseId)}`, {
@@ -51,10 +52,50 @@ const WarehouseDashboard = () => {
   };
 
   const validateForm = () => {
-    if (formData.action === "Restocked") return formData.item && formData.location && formData.units > 0;
-    if (formData.action === "Removed") return formData.groupId && formData.units > 0;
-    if (formData.action === "Move") return formData.groupId && formData.location && formData.units > 0;
+    if (formData.action === "Restocked")
+      return formData.item && formData.location && formData.units > 0;
+    if (formData.action === "Removed")
+      return formData.groupId && formData.units > 0;
+    if (formData.action === "Move")
+      return formData.groupId && formData.location && formData.units > 0;
     return true;
+  };
+
+  const handleSubmit = async () => {
+    if (!validateForm()) {
+      toast.error("Please complete all required fields.");
+      return;
+    }
+
+    try {
+      const username = localStorage.getItem("username");
+      const payload = { ...formData, warehouse: warehouseId, username };
+
+      const res = await fetch("http://localhost:8080/api/products/add", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        setShowAddModal(false);
+        setFormData({
+          action: "Restocked",
+          item: "",
+          location: "",
+          groupId: "",
+          units: 1,
+        });
+        toast.success("Transaction added!");
+        window.location.reload();
+      } else {
+        const text = await res.text();
+        toast.error("Failed to add: " + text);
+      }
+    } catch {
+      toast.error("Network error.");
+    }
   };
 
   return (
@@ -70,7 +111,9 @@ const WarehouseDashboard = () => {
               year: "numeric",
             })} • {currentTime.toLocaleTimeString()}
           </div>
-          <button className="add-product-btn" onClick={() => setShowAddModal(true)}>+</button>
+          <button className="add-product-btn" onClick={() => setShowAddModal(true)}>
+            +
+          </button>
         </div>
 
         <div className="content">
@@ -88,12 +131,14 @@ const WarehouseDashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {logs.map((log) => (
+              {(showAll ? logs : logs.slice(0, 10)).map((log) => (
                 <React.Fragment key={log.id}>
                   <tr>
                     <td style={{ textAlign: "center" }}>
                       {log.groupId && (
-                        <button className="toggle-btn" onClick={() => toggleExpand(log.id)}>☰</button>
+                        <button className="toggle-btn" onClick={() => toggleExpand(log.id)}>
+                          ☰
+                        </button>
                       )}
                     </td>
                     <td>{new Date(log.dateTime).toLocaleString()}</td>
@@ -117,8 +162,7 @@ const WarehouseDashboard = () => {
                                     ? ` (${rLog.units} units moved from ${rLog.previousLocation ?? "?"} → ${rLog.location}${rLog.groupId !== log.groupId ? `, New ID: ${rLog.groupId}` : ""})`
                                     : rLog.action === "Removed"
                                       ? ` (Removed ${rLog.units} units${rLog.remainingUnits != null ? `, ${rLog.remainingUnits} left` : ""})`
-                                      : ` (Item: ${rLog.item}, Location: ${rLog.location}, Units: ${rLog.units})`
-                                  }
+                                      : ` (Item: ${rLog.item}, Location: ${rLog.location}, Units: ${rLog.units})`}
                                 </li>
                               ))
                             ) : (
@@ -133,6 +177,14 @@ const WarehouseDashboard = () => {
               ))}
             </tbody>
           </table>
+
+          {logs.length > 10 && (
+            <div style={{ textAlign: "center", marginTop: "1rem" }}>
+              <button onClick={() => setShowAll((prev) => !prev)} className="brown-btn">
+                {showAll ? "Show Less" : "Show All"}
+              </button>
+            </div>
+          )}
         </div>
 
         {showAddModal && (
@@ -213,7 +265,7 @@ const WarehouseDashboard = () => {
                             ...prev,
                             item: latestValid.item.split(" (")[0],
                             location: prev.action === "Removed" ? latestValid.location : "",
-                            units: latestValid.units || 1
+                            units: latestValid.units || 1,
                           }));
                         } else {
                           toast.error("Invalid Group ID");
@@ -265,46 +317,14 @@ const WarehouseDashboard = () => {
                 </>
               )}
 
-              <button
-                onClick={async () => {
-                  if (!validateForm()) {
-                    toast.error("Please complete all required fields.");
-                    return;
-                  }
-
-                  try {
-                    const username = localStorage.getItem("username");
-                    const payload = { ...formData, warehouse: warehouseId, username };
-
-                    const res = await fetch("http://localhost:8080/api/products/add", {
-                      method: "POST",
-                      credentials: "include",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify(payload),
-                    });
-
-                    if (res.ok) {
-                      setShowAddModal(false);
-                      setFormData({ action: "Restocked", item: "", location: "", groupId: "", units: 1 });
-                      toast.success("Transaction added!");
-                      window.location.reload();
-                    } else {
-                      const text = await res.text();
-                      toast.error("Failed to add: " + text);
-                    }
-                  } catch {
-                    toast.error("Network error.");
-                  }
-                }}
-              >
-                Submit
-              </button>
+              <button onClick={handleSubmit}>Submit</button>
               <button onClick={() => setShowAddModal(false)}>Cancel</button>
             </div>
           </div>
         )}
+
+        <ToastContainer position="bottom-right" autoClose={3000} />
       </div>
-      <ToastContainer position="bottom-right" autoClose={3000} />
     </DashboardLayout>
   );
 };

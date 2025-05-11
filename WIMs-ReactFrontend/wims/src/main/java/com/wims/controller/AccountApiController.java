@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +20,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.springframework.security.core.Authentication;
+
 
 @RestController
 @RequestMapping("/api/accounts")
@@ -102,13 +105,23 @@ public List<User> getAllAccounts() {
 
 @DeleteMapping("/{id}")
 public ResponseEntity<?> deleteAccount(@PathVariable Long id) {
-    Optional<User> userOpt = userRepository.findById(id);
-    if (userOpt.isEmpty()) {
+    Optional<User> targetUser = userRepository.findById(id);
+    if (targetUser.isEmpty()) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found");
+    }
+
+    // Prevent admin from deleting itself
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    String currentUsername = auth.getName();
+
+    if (targetUser.get().getUsername().equals(currentUsername)) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+            .body("You cannot delete your own account.");
     }
 
     userRepository.deleteById(id);
     return ResponseEntity.ok("Account deleted successfully");
 }
+
 
 }

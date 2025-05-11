@@ -8,6 +8,7 @@ import "./AdminDashboard.css";
 const AdminDashboard = () => {
   const [logs, setLogs] = useState([]);
   const [expanded, setExpanded] = useState({});
+  const [showAll, setShowAll] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [groupId, setGroupId] = useState("");
   const [groupLogs, setGroupLogs] = useState([]);
@@ -27,14 +28,6 @@ const AdminDashboard = () => {
   };
 
   const formatDate = (dateTimeStr) => new Date(dateTimeStr).toLocaleString();
-
-  const getActionClass = (action) => {
-    const lower = action.toLowerCase();
-    if (lower === "restocked") return "restocked";
-    if (lower === "removed") return "removed";
-    if (lower === "move") return "move";
-    return "";
-  };
 
   const handleSearch = async () => {
     try {
@@ -84,7 +77,7 @@ const AdminDashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {logs.map((log) => (
+              {(showAll ? logs : logs.slice(0, 10)).map((log) => (
                 <React.Fragment key={log.id}>
                   <tr>
                     <td style={{ textAlign: "center" }}>
@@ -111,7 +104,7 @@ const AdminDashboard = () => {
                                 <li key={rLog.id}>
                                   {formatDate(rLog.dateTime)} - {rLog.action} by {rLog.username}
                                   {rLog.action === "Move"
-                                    ? ` (Moved ${rLog.units} units from ${rLog.previousLocation ?? "?"} → ${rLog.location})`
+                                    ? ` (Moved ${rLog.units} units from ${rLog.previousLocation ?? "?"} → ${rLog.location}${rLog.groupId !== log.groupId ? `, New ID: ${rLog.groupId}` : ""})`
                                     : rLog.action === "Removed"
                                       ? ` (Removed ${rLog.units} units${rLog.remainingUnits != null ? `, ${rLog.remainingUnits} left` : ""})`
                                       : ` (Item: ${rLog.item}, Location: ${rLog.location}, Units: ${rLog.units})`
@@ -130,6 +123,14 @@ const AdminDashboard = () => {
               ))}
             </tbody>
           </table>
+
+          {logs.length > 10 && (
+            <div style={{ textAlign: "center", marginTop: "1rem" }}>
+              <button className="brown-btn" onClick={() => setShowAll((prev) => !prev)}>
+                {showAll ? "Show Less" : "Show All"}
+              </button>
+            </div>
+          )}
         </div>
 
         {showSearchModal && (

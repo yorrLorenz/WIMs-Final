@@ -16,6 +16,7 @@ const CalendarPage = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [logs, setLogs] = useState([]);
   const [warehouse, setWarehouse] = useState("");
+  const [showAll, setShowAll] = useState(false); // ✅ pagination toggle
 
   const isAdmin = new URLSearchParams(window.location.search).get("admin") === "true";
 
@@ -24,43 +25,27 @@ const CalendarPage = () => {
     end: endOfMonth(currentMonth),
   });
 
-  const handleDayClick = (day) => {
-    setSelectedDate(day);
-  };
+  const handleDayClick = (day) => setSelectedDate(day);
+  const handlePrevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
+  const handleNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
 
-  const handlePrevMonth = () => {
-    setCurrentMonth(subMonths(currentMonth, 1));
-  };
-
-  const handleNextMonth = () => {
-    setCurrentMonth(addMonths(currentMonth, 1));
-  };
-
-  // Load warehouse for clerks
   useEffect(() => {
     if (!isAdmin) {
       const stored = localStorage.getItem("warehouse");
-      if (stored) {
-        setWarehouse(stored);
-      } else {
-        console.warn("No warehouse found in localStorage.");
-      }
+      if (stored) setWarehouse(stored);
+      else console.warn("No warehouse found in localStorage.");
     }
   }, [isAdmin]);
 
-  // Fetch logs after warehouse and date are ready
   useEffect(() => {
     const formattedDate = format(selectedDate, "yyyy-MM-dd");
-
-    if (!isAdmin && !warehouse) return; // Prevent empty warehouse fetch
+    if (!isAdmin && !warehouse) return;
 
     const url = isAdmin
       ? `http://localhost:8080/api/accounts/dashboard-by-date?date=${formattedDate}`
       : `http://localhost:8080/api/dashboard-by-date?date=${formattedDate}&warehouse=${encodeURIComponent(warehouse)}`;
 
-    fetch(url, {
-      credentials: "include",
-    })
+    fetch(url, { credentials: "include" })
       .then((res) => res.json())
       .then((data) => setLogs(data.logs || []))
       .catch((err) => {
@@ -78,6 +63,7 @@ const CalendarPage = () => {
       return `Restocked ${log.units} units at ${log.location}`;
     }
   };
+
   return (
     <div className="calendar-container">
       <div className="calendar-header">
@@ -90,22 +76,16 @@ const CalendarPage = () => {
       </div>
 
       <div className="calendar-grid">
-        <div className="day-label">S</div>
-        <div className="day-label">M</div>
-        <div className="day-label">T</div>
-        <div className="day-label">W</div>
-        <div className="day-label">T</div>
-        <div className="day-label">F</div>
-        <div className="day-label">S</div>
+        {["S", "M", "T", "W", "T", "F", "S"].map((d) => (
+          <div key={d} className="day-label">{d}</div>
+        ))}
         {Array.from({ length: days[0].getDay() }).map((_, i) => (
           <div key={`empty-${i}`} />
         ))}
         {days.map((day) => (
           <div
             key={day}
-            className={`calendar-day ${isToday(day) ? "today" : ""} ${
-              isSameDay(day, selectedDate) ? "selected" : ""
-            }`}
+            className={`calendar-day ${isToday(day) ? "today" : ""} ${isSameDay(day, selectedDate) ? "selected" : ""}`}
             onClick={() => handleDayClick(day)}
           >
             {day.getDate()}
@@ -127,8 +107,8 @@ const CalendarPage = () => {
             </tr>
           </thead>
           <tbody>
-            {logs.length > 0 ? (
-              logs.map((log) => (
+            {(showAll ? logs : logs.slice(0, 10)).length > 0 ? (
+              (showAll ? logs : logs.slice(0, 10)).map((log) => (
                 <tr key={log.id}>
                   <td>{new Date(log.dateTime).toLocaleTimeString()}</td>
                   <td>{log.username}</td>
@@ -140,11 +120,19 @@ const CalendarPage = () => {
               ))
             ) : (
               <tr>
-                <td colSpan={isAdmin ? "5" : "4"}>No logs for this date</td>
+                <td colSpan={isAdmin ? "6" : "5"}>No logs for this date</td>
               </tr>
             )}
           </tbody>
         </table>
+
+        {logs.length > 10 && (
+          <div style={{ textAlign: "center", marginTop: "1rem" }}>
+            <button className="brown-btn" onClick={() => setShowAll((prev) => !prev)}>
+              {showAll ? "Show Less" : "Show All"}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
