@@ -97,6 +97,15 @@ const AddProduct = () => {
     <input type="text" name="item" value={formData.item} onChange={handleChange} required />
     <label>Location:</label>
     <input type="text" name="location" value={formData.location} onChange={handleChange} required />
+    <label>Units:</label>
+<input
+  type="number"
+  name="units"
+  min="1"
+  value={form.units || 1}
+  onChange={(e) => setForm({ ...form, units: parseInt(e.target.value) })}
+/>
+
   </>
 )}
 

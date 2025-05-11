@@ -7,6 +7,7 @@ import com.wims.model.User;
 import com.wims.repository.LogRepository;
 import com.wims.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -35,7 +37,6 @@ public class AccountApiController {
     @Autowired
     private LogRepository logRepository;
 
-    // ✅ Get current user info
     @GetMapping("/me")
     public ResponseEntity<User> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
         User user = userRepository.findByUsername(userDetails.getUsername())
@@ -44,7 +45,6 @@ public class AccountApiController {
         return ResponseEntity.ok(user);
     }
 
-    // ✅ Get current user's logs
     @GetMapping("/my-logs")
     public ResponseEntity<List<DashboardLogDTO>> getCurrentUserLogs(@AuthenticationPrincipal UserDetails userDetails) {
         List<Log> logs = logRepository.findByUsernameOrderByDateTimeDesc(userDetails.getUsername());
@@ -58,34 +58,57 @@ public class AccountApiController {
                 log.getItem(),
                 log.getWarehouse(),
                 log.getLocation(),
-                log.getGroupId()
+                log.getGroupId(),
+                log.getUnits(),
+                log.getRemainingUnits(),
+                log.getPreviousLocation()
             ))
             .collect(Collectors.toList());
 
         return ResponseEntity.ok(dtos);
     }
+
     @GetMapping("/dashboard-by-date")
-public DashboardResponseDTO getLogsByDateForAdmin(@RequestParam("date") String date) {
-    LocalDate parsedDate = LocalDate.parse(date);
-    LocalDateTime start = parsedDate.atStartOfDay();
-    LocalDateTime end = parsedDate.atTime(23, 59, 59);
+    public DashboardResponseDTO getLogsByDateForAdmin(@RequestParam("date") String date) {
+        LocalDate parsedDate = LocalDate.parse(date);
+        LocalDateTime start = parsedDate.atStartOfDay();
+        LocalDateTime end = parsedDate.atTime(23, 59, 59);
 
-    List<Log> logs = logRepository.findByDateTimeBetweenOrderByDateTimeDesc(start, end);
+        List<Log> logs = logRepository.findByDateTimeBetweenOrderByDateTimeDesc(start, end);
 
-    List<DashboardLogDTO> dtos = logs.stream()
-        .map(log -> new DashboardLogDTO(
-            log.getId(),
-            log.getDateTime(),
-            log.getUsername(),
-            log.getAction(),
-            log.getItem(),
-            log.getWarehouse(),
-            log.getLocation(),
-            log.getGroupId()
-        ))
-        .collect(Collectors.toList());
+        List<DashboardLogDTO> dtos = logs.stream()
+            .map(log -> new DashboardLogDTO(
+                log.getId(),
+                log.getDateTime(),
+                log.getUsername(),
+                log.getAction(),
+                log.getItem(),
+                log.getWarehouse(),
+                log.getLocation(),
+                log.getGroupId(),
+                log.getUnits(),
+                log.getRemainingUnits(),
+                log.getPreviousLocation()
+            ))
+            .collect(Collectors.toList());
 
-    return new DashboardResponseDTO("All Warehouses", dtos);
+        return new DashboardResponseDTO("All Warehouses", dtos);
+    }
+
+    @GetMapping
+public List<User> getAllAccounts() {
+    return userRepository.findAll();
+}
+
+@DeleteMapping("/{id}")
+public ResponseEntity<?> deleteAccount(@PathVariable Long id) {
+    Optional<User> userOpt = userRepository.findById(id);
+    if (userOpt.isEmpty()) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found");
+    }
+
+    userRepository.deleteById(id);
+    return ResponseEntity.ok("Account deleted successfully");
 }
 
 }

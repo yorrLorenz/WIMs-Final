@@ -51,10 +51,43 @@
   color: white;
 }
 
-/* Set wider date column */
-.dashboard-table th:nth-child(2),
-.dashboard-table td:nth-child(2) {
-  width: 220px;
+/* Table column widths */
+th:nth-child(1),
+td:nth-child(1) {
+  width: 15px; /* Expand icon */
+}
+
+th:nth-child(2),
+td:nth-child(2) {
+  width: 110px; /* Date */
+}
+
+th:nth-child(3),
+td:nth-child(3) {
+  width: 190px; /* User */
+}
+
+th:nth-child(4),
+td:nth-child(4) {
+  width: 50px; /* Action */
+}
+
+th:nth-child(5),
+td:nth-child(5) {
+  width: 300px; /* Item */
+}
+
+th:nth-child(6),
+td:nth-child(6) {
+  width: 215px; /* Location */
+}
+th:nth-child(7),
+td:nth-child(7) {
+  width: 90px; /* units */
+}
+th:nth-child(8),
+td:nth-child(8) {
+  width: 40px; /* units */
 }
 
 /* Action colors */

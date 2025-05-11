@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 
 @Configuration
 public class TestDataLoader {
-
+/*
     @Bean
     public CommandLineRunner loadTestData(LogRepository logRepository) {
         return args -> {
@@ -47,5 +47,5 @@ public class TestDataLoader {
                 "ID-TEST-0003"
             ));
         };
-    }
+    } */
 }

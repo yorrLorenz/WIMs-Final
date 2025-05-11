@@ -34,110 +34,57 @@ public class Log {
     @Column(name = "group_id")
     private String groupId;
 
-    // 🔽 Not stored in DB, used for display purposes
+    @Column(name = "units")
+    private Integer units;
+
+    @Column(name = "remaining_units")
+    private Integer remainingUnits;
+
+    @Column(name = "previous_location")
+    private String previousLocation;
+
     @Transient
     private List<Log> relatedLogs;
 
-    // --- Constructors ---
+    // Getters and Setters
+    public Long getId() { return id; }
+    public LocalDateTime getDateTime() { return dateTime; }
+    public void setDateTime(LocalDateTime dateTime) { this.dateTime = dateTime; }
+
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+
+    public String getAction() { return action; }
+    public void setAction(String action) { this.action = action; }
+
+    public String getItem() { return item; }
+    public void setItem(String item) { this.item = item; }
+
+    public String getWarehouse() { return warehouse; }
+    public void setWarehouse(String warehouse) { this.warehouse = warehouse; }
+
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
+
+    public String getGroupId() { return groupId; }
+    public void setGroupId(String groupId) { this.groupId = groupId; }
+
+    public Integer getUnits() { return units; }
+    public void setUnits(Integer units) { this.units = units; }
+
+    public Integer getRemainingUnits() { return remainingUnits; }
+    public void setRemainingUnits(Integer remainingUnits) { this.remainingUnits = remainingUnits; }
+
+    public String getPreviousLocation() { return previousLocation; }
+    public void setPreviousLocation(String previousLocation) { this.previousLocation = previousLocation; }
+
+    public List<Log> getRelatedLogs() { return relatedLogs; }
+    public void setRelatedLogs(List<Log> relatedLogs) { this.relatedLogs = relatedLogs; }
 
     @PrePersist
     public void generateGroupIdIfRestocked() {
         if ("Restocked".equalsIgnoreCase(action) && (groupId == null || groupId.isBlank())) {
             this.groupId = UUID.randomUUID().toString();
         }
-    }
-
-    public Log() {
-    }
-
-    public Log(LocalDateTime dateTime, String username, String action, String item, String warehouse, String location) {
-        this.dateTime = dateTime;
-        this.username = username;
-        this.action = action;
-        this.item = item;
-        this.warehouse = warehouse;
-        this.location = location;
-    }
-
-    // ✅ Full constructor for data seeding (TestDataLoader)
-    public Log(Long id, LocalDateTime dateTime, String username, String action, String item, String warehouse, String location, String groupId) {
-        this.id = id;
-        this.dateTime = dateTime;
-        this.username = username;
-        this.action = action;
-        this.item = item;
-        this.warehouse = warehouse;
-        this.location = location;
-        this.groupId = groupId;
-    }
-
-    // --- Getters & Setters ---
-
-    public Long getId() {
-        return id;
-    }
-
-    public LocalDateTime getDateTime() {
-        return dateTime;
-    }
-
-    public void setDateTime(LocalDateTime dateTime) {
-        this.dateTime = dateTime;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getAction() {
-        return action;
-    }
-
-    public void setAction(String action) {
-        this.action = action;
-    }
-
-    public String getItem() {
-        return item;
-    }
-
-    public void setItem(String item) {
-        this.item = item;
-    }
-
-    public String getWarehouse() {
-        return warehouse;
-    }
-
-    public void setWarehouse(String warehouse) {
-        this.warehouse = warehouse;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
-    }
-
-    public String getGroupId() {
-        return groupId;
-    }
-
-    public void setGroupId(String groupId) {
-        this.groupId = groupId;
-    }
-
-    public List<Log> getRelatedLogs() {
-        return relatedLogs;
-    }
-
-    public void setRelatedLogs(List<Log> relatedLogs) {
-        this.relatedLogs = relatedLogs;
     }
 }

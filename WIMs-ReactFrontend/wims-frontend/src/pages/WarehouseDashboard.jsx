@@ -15,6 +15,7 @@ const WarehouseDashboard = () => {
     item: "",
     location: "",
     groupId: "",
+    units: 1,
   });
   const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -38,17 +39,21 @@ const WarehouseDashboard = () => {
 
   const getModalTitle = () => {
     switch (formData.action) {
-      case "Restocked": return "Add Product";
-      case "Removed": return "Remove Product";
-      case "Move": return "Move Product";
-      default: return "Transaction";
+      case "Restocked":
+        return "Add Product";
+      case "Removed":
+        return "Remove Product";
+      case "Move":
+        return "Move Product";
+      default:
+        return "Transaction";
     }
   };
 
   const validateForm = () => {
-    if (formData.action === "Restocked") return formData.item && formData.location;
-    if (formData.action === "Removed") return formData.groupId;
-    if (formData.action === "Move") return formData.groupId && formData.location;
+    if (formData.action === "Restocked") return formData.item && formData.location && formData.units > 0;
+    if (formData.action === "Removed") return formData.groupId && formData.units > 0;
+    if (formData.action === "Move") return formData.groupId && formData.location && formData.units > 0;
     return true;
   };
 
@@ -73,12 +78,13 @@ const WarehouseDashboard = () => {
           <table className="dashboard-table">
             <thead>
               <tr>
-                <th style={{ textAlign: "center" }}></th>
+                <th></th>
                 <th>Date</th>
                 <th>User</th>
                 <th>Action</th>
                 <th>Item</th>
                 <th>Location</th>
+                <th>Units</th>
               </tr>
             </thead>
             <tbody>
@@ -92,25 +98,27 @@ const WarehouseDashboard = () => {
                     </td>
                     <td>{new Date(log.dateTime).toLocaleString()}</td>
                     <td>{log.username}</td>
-                    <td className={`action-cell ${log.action.toLowerCase()}`}>
-                      {log.action === "Restocked" ? "Restocked" :
-                        log.action === "Removed" ? "Removed" :
-                        log.action === "Move" ? "Moved" : log.action}
-                    </td>
-                    <td>{log.item}</td>
+                    <td className={`action-cell ${log.action.toLowerCase()}`}>{log.action}</td>
+                    <td>{log.item?.split(" (")[0] || "—"}</td>
                     <td>{log.location}</td>
+                    <td>{log.units ?? "—"}</td>
                   </tr>
                   {expanded[log.id] && log.groupId && (
                     <tr>
-                      <td colSpan="6">
+                      <td colSpan="7">
                         <div>
                           <strong>Group ID:</strong> {log.groupId}
                           <ul>
                             {log.relatedLogs?.length ? (
                               log.relatedLogs.map((rLog) => (
                                 <li key={rLog.id}>
-                                  {new Date(rLog.dateTime).toLocaleString()} - {rLog.action} by{" "}
-                                  {rLog.username} (Item: {rLog.item}, Location: {rLog.location})
+                                  {new Date(rLog.dateTime).toLocaleString()} - {rLog.action} by {rLog.username}
+                                  {rLog.action === "Move"
+                                    ? ` (${rLog.units} units moved from ${rLog.previousLocation ?? "?"} → ${rLog.location}${rLog.groupId !== log.groupId ? `, New ID: ${rLog.groupId}` : ""})`
+                                    : rLog.action === "Removed"
+                                      ? ` (Removed ${rLog.units} units${rLog.remainingUnits != null ? `, ${rLog.remainingUnits} left` : ""})`
+                                      : ` (Item: ${rLog.item}, Location: ${rLog.location}, Units: ${rLog.units})`
+                                  }
                                 </li>
                               ))
                             ) : (
@@ -157,6 +165,16 @@ const WarehouseDashboard = () => {
                     value={formData.location}
                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                   />
+                  <label>Units:</label>
+                  <input
+                    type="number"
+                    name="units"
+                    min="1"
+                    value={formData.units}
+                    onChange={(e) =>
+                      setFormData({ ...formData, units: parseInt(e.target.value) || 1 })
+                    }
+                  />
                 </>
               )}
 
@@ -164,53 +182,65 @@ const WarehouseDashboard = () => {
                 <>
                   <label>Group ID:</label>
                   <input
-  name="groupId"
-  value={formData.groupId}
-  onChange={async (e) => {
-    const groupId = e.target.value.trim();
-    setFormData((prev) => ({ ...prev, groupId }));
+                    name="groupId"
+                    value={formData.groupId}
+                    onChange={async (e) => {
+                      const groupId = e.target.value.trim();
+                      setFormData((prev) => ({ ...prev, groupId }));
 
-    // ✅ New validation
-    if (groupId === "") {
-      toast.error("Group ID cannot be empty");
-      return;
-    }
+                      if (!groupId) {
+                        toast.error("Group ID cannot be empty");
+                        return;
+                      }
 
-    try {
-      const res = await fetch(`http://localhost:8080/api/logs/group/${groupId}`, {
-        credentials: "include",
-      });
+                      try {
+                        const res = await fetch(`http://localhost:8080/api/logs/group/${groupId}`, {
+                          credentials: "include",
+                        });
 
-      if (res.ok) {
-        const result = await res.json();
-        const logs = Array.isArray(result) ? result : [result];
+                        if (res.ok) {
+                          const result = await res.json();
+                          const logs = Array.isArray(result) ? result : [result];
+                          logs.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
+                          const latestValid = logs.find((log) => log.action !== "Removed");
 
-        logs.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
-        const latestValid = logs.find((log) => log.action !== "Removed");
+                          if (!latestValid) {
+                            toast.error("No valid logs for this Group ID.");
+                            return;
+                          }
 
-        if (!latestValid) {
-          toast.error("No valid logs for this Group ID.");
-          return;
-        }
-
-        setFormData((prev) => ({
-          ...prev,
-          item: latestValid.item,
-          location: prev.action === "Removed" ? latestValid.location : "",
-        }));
-      } else {
-        const errText = await res.text();
-        toast.error("Error: Invalid input ");
-      }
-    } catch (err) {
-      toast.error("Error fetching group logs.");
-    }
-  }}
-/>
-
+                          setFormData((prev) => ({
+                            ...prev,
+                            item: latestValid.item.split(" (")[0],
+                            location: prev.action === "Removed" ? latestValid.location : "",
+                            units: latestValid.units || 1
+                          }));
+                        } else {
+                          toast.error("Invalid Group ID");
+                        }
+                      } catch {
+                        toast.error("Failed to fetch logs");
+                      }
+                    }}
+                  />
 
                   <label>Item:</label>
                   <input name="item" value={formData.item} readOnly />
+
+                  {formData.action === "Removed" && (
+                    <>
+                      <label>Units to Remove:</label>
+                      <input
+                        type="number"
+                        name="units"
+                        min="1"
+                        value={formData.units}
+                        onChange={(e) =>
+                          setFormData({ ...formData, units: parseInt(e.target.value) || 1 })
+                        }
+                      />
+                    </>
+                  )}
 
                   {formData.action === "Move" && (
                     <>
@@ -219,6 +249,16 @@ const WarehouseDashboard = () => {
                         name="location"
                         value={formData.location}
                         onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                      />
+                      <label>Units to Move:</label>
+                      <input
+                        type="number"
+                        name="units"
+                        min="1"
+                        value={formData.units}
+                        onChange={(e) =>
+                          setFormData({ ...formData, units: parseInt(e.target.value) || 1 })
+                        }
                       />
                     </>
                   )}
@@ -245,15 +285,15 @@ const WarehouseDashboard = () => {
 
                     if (res.ok) {
                       setShowAddModal(false);
-                      setFormData({ action: "Restocked", item: "", location: "", groupId: "" });
-                      toast.success("Transaction added successfully!");
+                      setFormData({ action: "Restocked", item: "", location: "", groupId: "", units: 1 });
+                      toast.success("Transaction added!");
                       window.location.reload();
                     } else {
                       const text = await res.text();
-                      toast.error("Failed to add product: " + text);
+                      toast.error("Failed to add: " + text);
                     }
-                  } catch (err) {
-                    toast.error("Submit error occurred");
+                  } catch {
+                    toast.error("Network error.");
                   }
                 }}
               >

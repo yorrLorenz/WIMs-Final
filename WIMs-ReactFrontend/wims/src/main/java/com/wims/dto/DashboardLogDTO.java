@@ -12,11 +12,11 @@ public class DashboardLogDTO {
     private String warehouse;
     private String location;
     private String groupId;
+    private Integer units;
+    private Integer remainingUnits;
+    private String previousLocation;
     private List<DashboardLogDTO> relatedLogs;
 
-    
-
-    // Constructor (without relatedLogs)
     public DashboardLogDTO(Long id,
                            LocalDateTime dateTime,
                            String username,
@@ -24,7 +24,10 @@ public class DashboardLogDTO {
                            String item,
                            String warehouse,
                            String location,
-                           String groupId) {
+                           String groupId,
+                           Integer units,
+                           Integer remainingUnits,
+                           String previousLocation) {
         this.id = id;
         this.dateTime = dateTime;
         this.username = username;
@@ -33,9 +36,12 @@ public class DashboardLogDTO {
         this.warehouse = warehouse;
         this.location = location;
         this.groupId = groupId;
+        this.units = units;
+        this.remainingUnits = remainingUnits;
+        this.previousLocation = previousLocation;
     }
 
-    // getters/setters for all fields…
+    // Getters and Setters
     public Long getId() { return id; }
     public LocalDateTime getDateTime() { return dateTime; }
     public String getUsername() { return username; }
@@ -44,7 +50,11 @@ public class DashboardLogDTO {
     public String getWarehouse() { return warehouse; }
     public String getLocation() { return location; }
     public String getGroupId() { return groupId; }
+    public Integer getUnits() { return units; }
+    public Integer getRemainingUnits() { return remainingUnits; }
+    public String getPreviousLocation() { return previousLocation; }
     public List<DashboardLogDTO> getRelatedLogs() { return relatedLogs; }
+
     public void setRelatedLogs(List<DashboardLogDTO> relatedLogs) {
         this.relatedLogs = relatedLogs;
     }

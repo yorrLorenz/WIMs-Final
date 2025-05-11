@@ -14,11 +14,15 @@ public class Product {
     private String warehouse;
     private String currentLocation;
     private boolean active = true;
+    private int units;
 
     // Getters and setters
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
+    public int getUnits() { return units; }
+    public void setUnits(int units) { this.units = units; }
 
     public String getGroupId() { return groupId; }
     public void setGroupId(String groupId) { this.groupId = groupId; }

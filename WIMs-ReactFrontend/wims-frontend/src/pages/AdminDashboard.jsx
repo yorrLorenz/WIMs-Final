@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import DashboardLayout from "../layouts/DashboardLayout";
-import "./AdminDashboard.css";
+import { toast, ToastContainer } from "react-toastify";
 import { FaSearch } from "react-icons/fa";
-
+import "react-toastify/dist/ReactToastify.css";
+import "./AdminDashboard.css";
 
 const AdminDashboard = () => {
   const [logs, setLogs] = useState([]);
-  const [expandedRows, setExpandedRows] = useState([]);
+  const [expanded, setExpanded] = useState({});
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [groupId, setGroupId] = useState("");
   const [groupLogs, setGroupLogs] = useState([]);
@@ -21,10 +22,8 @@ const AdminDashboard = () => {
       .catch((err) => console.error("Failed to load admin logs", err));
   }, []);
 
-  const toggleRow = (logId) => {
-    setExpandedRows((prev) =>
-      prev.includes(logId) ? prev.filter((id) => id !== logId) : [...prev, logId]
-    );
+  const toggleExpand = (logId) => {
+    setExpanded((prev) => ({ ...prev, [logId]: !prev[logId] }));
   };
 
   const formatDate = (dateTimeStr) => new Date(dateTimeStr).toLocaleString();
@@ -45,7 +44,6 @@ const AdminDashboard = () => {
       if (!res.ok) throw new Error("Group ID not found");
       const log = await res.json();
 
-      // Fetch all logs with same groupId
       const related = logs.filter(l => l.groupId === log.groupId);
       setGroupLogs(related);
       setSearchError("");
@@ -57,17 +55,16 @@ const AdminDashboard = () => {
 
   return (
     <DashboardLayout>
-      <div className="admin-dashboard-container">
+      <div className="dashboard-container">
         <div className="top-bar">
-          <div className="top-left">Admin Dashboard</div>
-          <div className="top-center">
-            <div id="time">{new Date().toLocaleTimeString()}</div>
-            <div id="date">{new Date().toLocaleDateString()}</div>
+          <div className="left">Admin Dashboard</div>
+          <div className="center">
+            {new Date().toLocaleDateString()} • {new Date().toLocaleTimeString()}
           </div>
-          <div className="top-right">
-<button className="search-btn" onClick={() => setShowSearchModal(true)}>
-  <FaSearch />
-</button>
+          <div className="right">
+            <button className="search-btn" onClick={() => setShowSearchModal(true)}>
+              <FaSearch />
+            </button>
           </div>
         </div>
 
@@ -83,6 +80,7 @@ const AdminDashboard = () => {
                 <th>Item</th>
                 <th>Warehouse</th>
                 <th>Location</th>
+                <th>Units</th>
               </tr>
             </thead>
             <tbody>
@@ -90,31 +88,43 @@ const AdminDashboard = () => {
                 <React.Fragment key={log.id}>
                   <tr>
                     <td style={{ textAlign: "center" }}>
-                      <button className="toggle-btn" onClick={() => toggleRow(log.id)}>☰</button>
+                      {log.groupId && (
+                        <button className="toggle-btn" onClick={() => toggleExpand(log.id)}>☰</button>
+                      )}
                     </td>
                     <td>{formatDate(log.dateTime)}</td>
                     <td>{log.username}</td>
-                    <td className={getActionClass(log.action)}>{log.action}</td>
-                    <td>{log.item}</td>
+                    <td className={`action-cell ${log.action.toLowerCase()}`}>{log.action}</td>
+                    <td>{log.item?.split(" (")[0]}</td>
                     <td>{log.warehouse}</td>
                     <td>{log.location}</td>
+                    <td>{log.units ?? "—"}</td>
                   </tr>
-                  {log.relatedLogs && expandedRows.includes(log.id) && (
+                  {expanded[log.id] && log.groupId && (
                     <tr>
-  <td colSpan="7">
-    <div className="related-log-box">
-      <strong>Group ID:</strong> {log.groupId}
-      <ul>
-        {log.relatedLogs.map((relLog) => (
-          <li key={relLog.id}>
-            {relLog.action} on {formatDate(relLog.dateTime)} by {relLog.username}
-          </li>
-        ))}
-      </ul>
-    </div>
-  </td>
-</tr>
-
+                      <td colSpan="8">
+                        <div>
+                          <strong>Group ID:</strong> {log.groupId}
+                          <ul>
+                            {log.relatedLogs?.length ? (
+                              log.relatedLogs.map((rLog) => (
+                                <li key={rLog.id}>
+                                  {formatDate(rLog.dateTime)} - {rLog.action} by {rLog.username}
+                                  {rLog.action === "Move"
+                                    ? ` (Moved ${rLog.units} units from ${rLog.previousLocation ?? "?"} → ${rLog.location})`
+                                    : rLog.action === "Removed"
+                                      ? ` (Removed ${rLog.units} units${rLog.remainingUnits != null ? `, ${rLog.remainingUnits} left` : ""})`
+                                      : ` (Item: ${rLog.item}, Location: ${rLog.location}, Units: ${rLog.units})`
+                                  }
+                                </li>
+                              ))
+                            ) : (
+                              <li>No related transactions found.</li>
+                            )}
+                          </ul>
+                        </div>
+                      </td>
+                    </tr>
                   )}
                 </React.Fragment>
               ))}
@@ -122,7 +132,6 @@ const AdminDashboard = () => {
           </table>
         </div>
 
-        {/* Modal */}
         {showSearchModal && (
           <div className="modal-overlay">
             <div className="modal-content">
@@ -144,7 +153,7 @@ const AdminDashboard = () => {
                   <ul>
                     {groupLogs.map(log => (
                       <li key={log.id}>
-                        [{formatDate(log.dateTime)}] {log.username} - {log.action} - {log.item} at {log.location}
+                        [{formatDate(log.dateTime)}] {log.username} - {log.action} - {log.item} at {log.location} ({log.units} units)
                       </li>
                     ))}
                   </ul>
@@ -154,6 +163,7 @@ const AdminDashboard = () => {
           </div>
         )}
       </div>
+      <ToastContainer position="bottom-right" autoClose={3000} />
     </DashboardLayout>
   );
 };

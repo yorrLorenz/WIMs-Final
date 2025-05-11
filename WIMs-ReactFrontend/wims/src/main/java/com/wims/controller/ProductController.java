@@ -7,6 +7,8 @@ import com.wims.repository.LogRepository;
 import com.wims.repository.ProductRepository;
 import com.wims.repository.WarehouseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -15,28 +17,17 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/products")
-@CrossOrigin(
-    origins = {
-        "http://localhost:5173",
-        "https://wims-rosy.vercel.app"
-    },
-    allowCredentials = "true"
-)
+@CrossOrigin(origins = {"http://localhost:5173", "https://wims-rosy.vercel.app"}, allowCredentials = "true")
 public class ProductController {
 
-    @Autowired
-    private ProductRepository productRepository;
-
-    @Autowired
-    private LogRepository logRepository;
-
-    @Autowired
-    private WarehouseRepository warehouseRepository;
+    @Autowired private ProductRepository productRepository;
+    @Autowired private LogRepository logRepository;
+    @Autowired private WarehouseRepository warehouseRepository;
 
     @PostMapping("/add")
-    public String addProduct(@RequestBody ProductRequest request) {
+    public ResponseEntity<?> addProduct(@RequestBody ProductRequest request) {
         Optional<Warehouse> warehouseOpt = warehouseRepository.findByName(request.getWarehouse());
-        if (warehouseOpt.isEmpty()) throw new RuntimeException("Warehouse not found");
+        if (warehouseOpt.isEmpty()) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Warehouse not found");
 
         Warehouse warehouse = warehouseOpt.get();
 
@@ -44,88 +35,124 @@ public class ProductController {
         log.setUsername(request.getUsername());
         log.setAction(request.getAction());
         log.setWarehouse(request.getWarehouse());
-        log.setLocation(request.getLocation());
+        log.setDateTime(LocalDateTime.now());
 
         if ("Restocked".equalsIgnoreCase(request.getAction())) {
             String groupId = generateCustomGroupId(warehouse);
             log.setItem(request.getItem());
             log.setGroupId(groupId);
+            log.setLocation(request.getLocation());
+            log.setUnits(request.getUnits());
 
             Product product = new Product();
             product.setItem(request.getItem());
             product.setGroupId(groupId);
             product.setWarehouse(request.getWarehouse());
             product.setCurrentLocation(request.getLocation());
+            product.setUnits(request.getUnits());
             product.setActive(true);
             productRepository.save(product);
 
         } else if ("Removed".equalsIgnoreCase(request.getAction())) {
-            log.setItem(request.getItem());
             log.setGroupId(request.getGroupId());
+            Optional<Product> productOpt = productRepository.findByGroupId(request.getGroupId());
+            if (productOpt.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found");
 
-            productRepository.findByGroupId(request.getGroupId()).ifPresentOrElse(product -> {
-                if (!product.isActive()) {
-                    throw new RuntimeException("Product not in warehouse");
-                }
+            Product product = productOpt.get();
+            if (!product.isActive()) return ResponseEntity.badRequest().body("Product not in warehouse");
+            if (!product.getWarehouse().equals(request.getWarehouse()))
+                return ResponseEntity.badRequest().body("Wrong warehouse");
 
-                if (!product.getWarehouse().equals(request.getWarehouse())) {
-                    throw new RuntimeException("Product does not belong to this warehouse");
-                }
+            int currentUnits = product.getUnits();
+            int unitsToRemove = request.getUnits();
+            if (unitsToRemove <= 0 || unitsToRemove > currentUnits)
+                return ResponseEntity.badRequest().body("Invalid number of units");
 
-                log.setLocation(product.getCurrentLocation());
+            log.setItem(product.getItem());
+            log.setLocation(product.getCurrentLocation());
+            log.setUnits(unitsToRemove);
+            log.setRemainingUnits(currentUnits - unitsToRemove);
+
+            if (unitsToRemove == currentUnits) {
                 product.setActive(false);
-                productRepository.save(product);
-            }, () -> {
-                throw new RuntimeException("Product not found.");
-            });
-
-        } else if ("Move".equalsIgnoreCase(request.getAction())) {
-            List<Log> previousLogs = logRepository.findByGroupId(request.getGroupId());
-            if (previousLogs.isEmpty()) {
-                throw new RuntimeException("Group ID not found");
+                product.setUnits(0);
+            } else {
+                product.setUnits(currentUnits - unitsToRemove);
             }
 
-            log.setItem(previousLogs.get(0).getItem());
+            productRepository.save(product);
+
+        } else if ("Move".equalsIgnoreCase(request.getAction())) {
             log.setGroupId(request.getGroupId());
 
-            productRepository.findByGroupId(request.getGroupId()).ifPresentOrElse(product -> {
-                if (!product.isActive()) {
-                    throw new RuntimeException("Product not in warehouse");
-                }
+            Optional<Product> productOpt = productRepository.findByGroupId(request.getGroupId());
+            if (productOpt.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found");
 
-                if (!product.getWarehouse().equals(request.getWarehouse())) {
-                    throw new RuntimeException("Product does not belong to this warehouse");
-                }
+            Product original = productOpt.get();
+            if (!original.isActive()) return ResponseEntity.badRequest().body("Inactive product");
+            if (!original.getWarehouse().equals(request.getWarehouse()))
+                return ResponseEntity.badRequest().body("Wrong warehouse");
 
-                product.setCurrentLocation(request.getLocation());
-                productRepository.save(product);
-            }, () -> {
-                throw new RuntimeException("Product not found.");
-            });
+            int moveUnits = request.getUnits();
+            if (moveUnits <= 0 || moveUnits > original.getUnits())
+                return ResponseEntity.badRequest().body("Invalid units to move");
+
+            String oldLocation = original.getCurrentLocation();
+            String newLocation = request.getLocation();
+            log.setPreviousLocation(oldLocation);
+            log.setLocation(newLocation);
+            log.setItem(original.getItem());
+            log.setUnits(moveUnits);
+
+            if (moveUnits == original.getUnits()) {
+                original.setCurrentLocation(newLocation);
+                productRepository.save(original);
+            } else {
+                // split: keep bigger group with old ID
+                original.setUnits(original.getUnits() - moveUnits);
+                productRepository.save(original);
+
+                String newGroupId = generateCustomGroupId(warehouse);
+                Product newProduct = new Product();
+                newProduct.setItem(original.getItem());
+                newProduct.setGroupId(newGroupId);
+                newProduct.setWarehouse(original.getWarehouse());
+                newProduct.setCurrentLocation(newLocation);
+                newProduct.setUnits(moveUnits);
+                newProduct.setActive(true);
+                productRepository.save(newProduct);
+
+                log.setItem(original.getItem() + " (Moved " + moveUnits + " units from " + oldLocation + " → " + newLocation + ", new Group ID: " + newGroupId + ")");
+                log.setGroupId(newGroupId);
+
+                // also log on original group
+                Log originalLog = new Log();
+                originalLog.setUsername(request.getUsername());
+                originalLog.setAction("Move");
+                originalLog.setWarehouse(original.getWarehouse());
+                originalLog.setGroupId(request.getGroupId());
+                originalLog.setItem(original.getItem());
+                originalLog.setLocation(oldLocation);
+                originalLog.setUnits(original.getUnits());
+                originalLog.setDateTime(LocalDateTime.now());
+                originalLog.setPreviousLocation(oldLocation);
+                logRepository.save(originalLog);
+            }
         }
 
-        log.setDateTime(LocalDateTime.now());
         logRepository.save(log);
-        return "Product logged successfully";
+        return ResponseEntity.ok("Product logged");
     }
 
     private String generateCustomGroupId(Warehouse warehouse) {
-        String code = warehouse.getCode(); // e.g., AA
-        String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("MMdd"));
-
-        String prefix = code + "-" + date;
+        String prefix = warehouse.getCode() + "-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("MMdd"));
         long count = logRepository.countByGroupIdStartingWith(prefix) + 1;
-
         return String.format("%s-%04d", prefix, count);
     }
 
     public static class ProductRequest {
-        private String username;
-        private String action;
-        private String item;
-        private String warehouse;
-        private String location;
-        private String groupId;
+        private String username, action, item, warehouse, location, groupId;
+        private int units;
 
         public String getUsername() { return username; }
         public void setUsername(String username) { this.username = username; }
@@ -144,5 +171,8 @@ public class ProductController {
 
         public String getGroupId() { return groupId; }
         public void setGroupId(String groupId) { this.groupId = groupId; }
+
+        public int getUnits() { return units; }
+        public void setUnits(int units) { this.units = units; }
     }
 }

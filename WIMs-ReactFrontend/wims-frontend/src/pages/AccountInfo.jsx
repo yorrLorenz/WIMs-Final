@@ -22,6 +22,16 @@ const AccountInfo = () => {
       .catch((err) => console.error("Failed to fetch logs", err));
   }, []);
 
+  const renderLogDetails = (log) => {
+    if (log.action === "Move") {
+      return `Moved ${log.units} units from ${log.previousLocation ?? "?"} to ${log.location}`;
+    } else if (log.action === "Removed") {
+      return `Removed ${log.units} units${log.remainingUnits != null ? `, ${log.remainingUnits} left` : ""}`;
+    } else {
+      return `Restocked ${log.units} units at ${log.location}`;
+    }
+  };
+
   if (!user) return <div>Loading...</div>;
 
   return (
@@ -37,7 +47,6 @@ const AccountInfo = () => {
               />
             ) : (
               <FaUserCircle style={{ width: "100%", height: "100%", color: "#aaa" }} />
-
             )}
           </div>
           <div>
@@ -52,7 +61,7 @@ const AccountInfo = () => {
         <hr className="divider" />
 
         {/* Logs Section */}
-        <h2 className="section-title">All Logs</h2>
+        <h2 className="section-title">Your Activity Logs</h2>
         <div className="section-underline"></div>
 
         <table className="account-table">
@@ -60,9 +69,9 @@ const AccountInfo = () => {
             <tr>
               <th>Date</th>
               <th>Action</th>
-              <th>Warehouse</th>
               <th>Item</th>
-              <th>Location</th>
+              <th>Warehouse</th>
+              <th>Details</th>
             </tr>
           </thead>
           <tbody>
@@ -71,9 +80,9 @@ const AccountInfo = () => {
                 <tr key={index}>
                   <td>{new Date(log.dateTime).toLocaleString()}</td>
                   <td className={log.action.toLowerCase()}>{log.action}</td>
+                  <td>{log.item?.split(" (")[0]}</td>
                   <td>{log.warehouse}</td>
-                  <td>{log.item}</td>
-                  <td>{log.location}</td>
+                  <td>{renderLogDetails(log)}</td>
                 </tr>
               ))
             ) : (

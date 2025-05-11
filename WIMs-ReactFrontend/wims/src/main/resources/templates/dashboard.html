@@ -50,8 +50,9 @@
             <tr th:if="${log.relatedLogs}" th:id="'details-' + ${log.id}" style="display:none;">
                 <td colspan="7">
                     <ul>
-                        <li th:each="relLog : ${log.relatedLogs}" th:text="${relLog.action + ' on ' + #temporals.format(relLog.dateTime, 'MM/dd/yyyy hh:mm a')} by ' + relLog.username}"></li>
-                    </ul>
+<li th:each="relLog : ${log.relatedLogs}"
+    th:text="${relLog.action + ' ' + relLog.units + ' unit(s) on ' + #temporals.format(relLog.dateTime, 'MM/dd/yyyy hh:mm a')} by ' + relLog.username">
+</li>                    </ul>d
                 </td>
             </tr>
             
