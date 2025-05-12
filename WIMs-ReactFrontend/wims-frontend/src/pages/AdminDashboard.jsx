@@ -3,7 +3,7 @@ import DashboardLayout from "../layouts/DashboardLayout";
 import { toast, ToastContainer } from "react-toastify";
 import { FaSearch } from "react-icons/fa";
 import "react-toastify/dist/ReactToastify.css";
-//import "./Admindashboard.css";
+// import "./AdminDashboard.css"; // Optional if you need styles
 
 const AdminDashboard = () => {
   const [logs, setLogs] = useState([]);
@@ -16,10 +16,8 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     fetch("https://wims-w48m.onrender.com/api/admin/logs", {
-      method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+      method: "GET",
+      credentials: "include",
     })
       .then((res) => res.json())
       .then((data) => setLogs(data.logs))
@@ -35,15 +33,14 @@ const AdminDashboard = () => {
   const handleSearch = async () => {
     try {
       const res = await fetch(`https://wims-w48m.onrender.com/api/logs/group/${encodeURIComponent(groupId)}`, {
-        method: "POST",
+        method: "GET",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
       });
-      if (!res.ok) throw new Error("Group ID not found");
-      const log = await res.json();
 
-      const related = logs.filter(l => l.groupId === log.groupId);
+      if (!res.ok) throw new Error("Group ID not found");
+
+      const log = await res.json();
+      const related = logs.filter((l) => l.groupId === log.groupId);
       setGroupLogs(related);
       setSearchError("");
     } catch (err) {
@@ -158,7 +155,7 @@ const AdminDashboard = () => {
                 <div className="search-results">
                   <h4>Related Logs</h4>
                   <ul>
-                    {groupLogs.map(log => (
+                    {groupLogs.map((log) => (
                       <li key={log.id}>
                         [{formatDate(log.dateTime)}] {log.username} - {log.action} - {log.item} at {log.location} ({log.units} units)
                       </li>

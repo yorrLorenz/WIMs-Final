@@ -20,7 +20,9 @@ const CreateAccountPage = () => {
   const webcamRef = useRef(null);
 
   useEffect(() => {
-    fetch("https://wims-w48m.onrender.com/api/warehouses", { credentials: "include" })
+    fetch("https://wims-w48m.onrender.com/api/warehouses", {
+      credentials: "include",
+    })
       .then((res) => res.json())
       .then((data) => setWarehouses(data))
       .catch((err) => console.error("Failed to load warehouses", err));
@@ -73,21 +75,19 @@ const CreateAccountPage = () => {
       const res = await fetch("https://wims-w48m.onrender.com/api/accounts/create", {
         method: "POST",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: formData, // ✅ no need to set headers, browser handles it
       });
 
       if (res.ok) {
         toast.success("Account created!");
-        setTimeout(() => {
-          navigate("/select-warehouse");
-        }, 1000);
+        setTimeout(() => navigate("/select-warehouse"), 1000);
       } else {
         const msg = await res.text();
         toast.error("Error: " + msg);
       }
     } catch (err) {
-      toast.error("Failed to create account.");
+      console.error("Failed to create account:", err);
+      toast.error("Network error. Please try again.");
     }
   };
 
@@ -126,8 +126,13 @@ const CreateAccountPage = () => {
         <div className="form-right">
           <label>Profile Picture</label>
           <input type="file" onChange={handleFileChange} disabled={useWebcam} />
+
           <label className="checkbox-label">
-            <input type="checkbox" checked={useWebcam} onChange={() => setUseWebcam(!useWebcam)} />
+            <input
+              type="checkbox"
+              checked={useWebcam}
+              onChange={() => setUseWebcam((prev) => !prev)}
+            />
             Use webcam instead
           </label>
 
@@ -155,14 +160,12 @@ const CreateAccountPage = () => {
 
         <div className="form-actions">
           <div className="form-button">
-            <button type="submit" className="brown-btn wide">Create Account</button>
+            <button type="submit" className="brown-btn wide">
+              Create Account
+            </button>
           </div>
           <div className="form-button">
-            <button
-              type="button"
-              className="brown-btn back"
-              onClick={() => navigate("/select-warehouse")}
-            >
+            <button type="button" className="brown-btn back" onClick={() => navigate("/select-warehouse")}>
               ← Back
             </button>
           </div>

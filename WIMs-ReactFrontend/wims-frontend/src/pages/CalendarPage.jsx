@@ -16,7 +16,7 @@ const CalendarPage = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [logs, setLogs] = useState([]);
   const [warehouse, setWarehouse] = useState("");
-  const [showAll, setShowAll] = useState(false); // ✅ pagination toggle
+  const [showAll, setShowAll] = useState(false);
 
   const isAdmin = new URLSearchParams(window.location.search).get("admin") === "true";
 
@@ -47,7 +47,10 @@ const CalendarPage = () => {
 
     fetch(url, { credentials: "include" })
       .then((res) => res.json())
-      .then((data) => setLogs(data.logs || []))
+      .then((data) => {
+        const sorted = (data.logs || []).sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
+        setLogs(sorted);
+      })
       .catch((err) => {
         console.error("Error loading logs", err);
         setLogs([]);

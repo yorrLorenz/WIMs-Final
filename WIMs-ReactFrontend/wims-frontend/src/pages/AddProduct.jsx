@@ -18,22 +18,22 @@ const AddProduct = () => {
 
   const handleChange = async (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const updatedForm = { ...formData, [name]: value };
+    setFormData(updatedForm);
 
-    if (name === "groupId" && (formData.action === "Removed" || formData.action === "Move")) {
+    if (name === "groupId" && (updatedForm.action === "Removed" || updatedForm.action === "Move")) {
       try {
         const res = await fetch(`https://wims-w48m.onrender.com/api/logs/group/${encodeURIComponent(value)}`, {
-          method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+          method: "GET",
+          credentials: "include",
         });
+
         if (res.ok) {
           const data = await res.json();
           setFormData((prev) => ({
             ...prev,
             item: data.item,
-            location: formData.action === "Removed" ? data.location : "",
+            location: updatedForm.action === "Removed" ? data.location : "",
           }));
         } else {
           toast.error("Group ID not found");
@@ -69,10 +69,10 @@ const AddProduct = () => {
 
     try {
       const res = await fetch("https://wims-w48m.onrender.com/api/products/add", {
-       method: "POST",
+        method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(body),
       });
 
       if (res.ok) {

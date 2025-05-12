@@ -23,9 +23,8 @@ const WarehouseDashboard = () => {
   useEffect(() => {
     fetch(`https://wims-w48m.onrender.com/api/dashboard/${encodeURIComponent(warehouseId)}`, {
       method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
     })
       .then((res) => res.json())
       .then((data) => setLogs(data.logs))
@@ -43,14 +42,10 @@ const WarehouseDashboard = () => {
 
   const getModalTitle = () => {
     switch (formData.action) {
-      case "Restocked":
-        return "Add Product";
-      case "Removed":
-        return "Remove Product";
-      case "Move":
-        return "Move Product";
-      default:
-        return "Transaction";
+      case "Restocked": return "Add Product";
+      case "Removed": return "Remove Product";
+      case "Move": return "Move Product";
+      default: return "Transaction";
     }
   };
 
@@ -78,7 +73,7 @@ const WarehouseDashboard = () => {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
 
       if (res.ok) {
@@ -107,16 +102,9 @@ const WarehouseDashboard = () => {
         <div className="top-bar">
           <div className="left">Warehouse: {warehouseId}</div>
           <div className="center">
-            {currentTime.toLocaleDateString(undefined, {
-              weekday: "short",
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })} • {currentTime.toLocaleTimeString()}
+            {currentTime.toLocaleDateString()} • {currentTime.toLocaleTimeString()}
           </div>
-          <button className="add-product-btn" onClick={() => setShowAddModal(true)}>
-            +
-          </button>
+          <button className="add-product-btn" onClick={() => setShowAddModal(true)}>+</button>
         </div>
 
         <div className="content">
@@ -139,9 +127,7 @@ const WarehouseDashboard = () => {
                   <tr>
                     <td style={{ textAlign: "center" }}>
                       {log.groupId && (
-                        <button className="toggle-btn" onClick={() => toggleExpand(log.id)}>
-                          ☰
-                        </button>
+                        <button className="toggle-btn" onClick={() => toggleExpand(log.id)}>☰</button>
                       )}
                     </td>
                     <td>{new Date(log.dateTime).toLocaleString()}</td>
@@ -194,7 +180,6 @@ const WarehouseDashboard = () => {
           <div className="modal">
             <div className="modal-content">
               <h3>{getModalTitle()}</h3>
-
               <label>Action:</label>
               <select
                 name="action"
@@ -209,27 +194,11 @@ const WarehouseDashboard = () => {
               {formData.action === "Restocked" && (
                 <>
                   <label>Item:</label>
-                  <input
-                    name="item"
-                    value={formData.item}
-                    onChange={(e) => setFormData({ ...formData, item: e.target.value })}
-                  />
+                  <input name="item" value={formData.item} onChange={(e) => setFormData({ ...formData, item: e.target.value })} />
                   <label>Location:</label>
-                  <input
-                    name="location"
-                    value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  />
+                  <input name="location" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
                   <label>Units:</label>
-                  <input
-                    type="number"
-                    name="units"
-                    min="1"
-                    value={formData.units}
-                    onChange={(e) =>
-                      setFormData({ ...formData, units: parseInt(e.target.value) || 1 })
-                    }
-                  />
+                  <input type="number" name="units" min="1" value={formData.units} onChange={(e) => setFormData({ ...formData, units: parseInt(e.target.value) || 1 })} />
                 </>
               )}
 
@@ -251,9 +220,8 @@ const WarehouseDashboard = () => {
                       try {
                         const res = await fetch(`https://wims-w48m.onrender.com/api/logs/group/${groupId}`, {
                           method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+                          credentials: "include",
+                          headers: { "Content-Type": "application/json" },
                         });
 
                         if (res.ok) {
@@ -288,36 +256,16 @@ const WarehouseDashboard = () => {
                   {formData.action === "Removed" && (
                     <>
                       <label>Units to Remove:</label>
-                      <input
-                        type="number"
-                        name="units"
-                        min="1"
-                        value={formData.units}
-                        onChange={(e) =>
-                          setFormData({ ...formData, units: parseInt(e.target.value) || 1 })
-                        }
-                      />
+                      <input type="number" name="units" min="1" value={formData.units} onChange={(e) => setFormData({ ...formData, units: parseInt(e.target.value) || 1 })} />
                     </>
                   )}
 
                   {formData.action === "Move" && (
                     <>
                       <label>New Location:</label>
-                      <input
-                        name="location"
-                        value={formData.location}
-                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                      />
+                      <input name="location" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
                       <label>Units to Move:</label>
-                      <input
-                        type="number"
-                        name="units"
-                        min="1"
-                        value={formData.units}
-                        onChange={(e) =>
-                          setFormData({ ...formData, units: parseInt(e.target.value) || 1 })
-                        }
-                      />
+                      <input type="number" name="units" min="1" value={formData.units} onChange={(e) => setFormData({ ...formData, units: parseInt(e.target.value) || 1 })} />
                     </>
                   )}
                 </>

@@ -5,24 +5,20 @@ import "./AccountInfo.css";
 const AccountInfo = () => {
   const [user, setUser] = useState(null);
   const [logs, setLogs] = useState([]);
-  const [showAll, setShowAll] = useState(false); // ✅ pagination toggle
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     fetch("https://wims-w48m.onrender.com/api/accounts/me", {
-      method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+      method: "GET",
+      credentials: "include",
     })
       .then((res) => res.json())
       .then((data) => setUser(data))
       .catch((err) => console.error("Failed to fetch user", err));
 
     fetch("https://wims-w48m.onrender.com/api/accounts/my-logs", {
-      method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+      method: "GET",
+      credentials: "include",
     })
       .then((res) => res.json())
       .then((data) => setLogs(data))
@@ -44,7 +40,6 @@ const AccountInfo = () => {
   return (
     <div className="account-container">
       <div className="account-card">
-        {/* Header Section */}
         <div className="account-header">
           <div className="profile-picture">
             {user.imageUrl ? (
@@ -67,7 +62,6 @@ const AccountInfo = () => {
 
         <hr className="divider" />
 
-        {/* Logs Section */}
         <h2 className="section-title">Your Activity Logs</h2>
         <div className="section-underline"></div>
 

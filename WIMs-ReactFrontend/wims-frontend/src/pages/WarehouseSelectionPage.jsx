@@ -7,7 +7,7 @@ import "./WarehouseSelectionPage.css";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-// Fix Leaflet icon path issue
+// Fix Leaflet marker icon bug
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
@@ -85,39 +85,29 @@ const WarehouseSelectionPage = () => {
       return;
     }
 
-    if (selectedType === "Accounts" && selectedAccount) {
-      fetch(`https://wims-w48m.onrender.com/api/accounts/${selectedAccount.id}`, {
-        method: "DELETE",
-        credentials: "include",
-      })
-        .then((res) => {
-          if (!res.ok) throw new Error("Failed to delete account");
-          return res.text();
-        })
-        .then(() => {
-          toast.success("Successfully removed account!");
-          setAccounts((prev) => prev.filter((acc) => acc.id !== selectedAccount.id));
-          closeModal();
-        })
-        .catch((err) => toast.error("Error deleting account: " + err.message));
-    }
+    const deleteUrl =
+      selectedType === "Accounts"
+        ? `https://wims-w48m.onrender.com/api/accounts/${selectedAccount.id}`
+        : `https://wims-w48m.onrender.com/api/warehouses/${selectedWarehouse.id}`;
 
-    if (selectedType === "Warehouses" && selectedWarehouse) {
-      fetch(`https://wims-w48m.onrender.com/api/warehouses/${selectedWarehouse.id}`, {
-        method: "DELETE",
-        credentials: "include",
+    fetch(deleteUrl, {
+      method: "DELETE",
+      credentials: "include",
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error(`Failed to delete ${selectedType.slice(0, -1).toLowerCase()}`);
+        return res.text();
       })
-        .then((res) => {
-          if (!res.ok) throw new Error("Failed to delete warehouse");
-          return res.text();
-        })
-        .then(() => {
-          toast.success("Successfully removed warehouse!");
+      .then(() => {
+        toast.success(`Successfully removed ${selectedType.slice(0, -1).toLowerCase()}!`);
+        if (selectedType === "Accounts") {
+          setAccounts((prev) => prev.filter((acc) => acc.id !== selectedAccount.id));
+        } else {
           setWarehouses((prev) => prev.filter((wh) => wh.id !== selectedWarehouse.id));
-          closeModal();
-        })
-        .catch((err) => toast.error("Error deleting warehouse: " + err.message));
-    }
+        }
+        closeModal();
+      })
+      .catch((err) => toast.error("Error deleting: " + err.message));
   };
 
   if (loading) return <p className="page-container">Loading...</p>;
@@ -133,14 +123,20 @@ const WarehouseSelectionPage = () => {
             attribution='&copy; OpenStreetMap contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          {warehouses.map((wh, idx) => (
+          {warehouses.map((wh) => (
             <Marker
-              key={idx}
+              key={wh.id}
               position={[wh.latitude, wh.longitude]}
               eventHandlers={{ click: () => handleWarehouseClick(wh.name) }}
             >
-              <Tooltip direction="top" offset={[0, -10]} opacity={1}>{wh.name}</Tooltip>
-              <Popup><strong>{wh.name}</strong><br />Click to open</Popup>
+              <Tooltip direction="top" offset={[0, -10]} opacity={1}>
+                {wh.name}
+              </Tooltip>
+              <Popup>
+                <strong>{wh.name}</strong>
+                <br />
+                Click to open
+              </Popup>
             </Marker>
           ))}
         </MapContainer>
@@ -159,12 +155,15 @@ const WarehouseSelectionPage = () => {
             <h3>Manage {selectedType}</h3>
 
             <label>Type:</label>
-            <select value={selectedType} onChange={(e) => {
-              setSelectedType(e.target.value);
-              setConfirmStep(0);
-              setSelectedAccount(null);
-              setSelectedWarehouse(null);
-            }}>
+            <select
+              value={selectedType}
+              onChange={(e) => {
+                setSelectedType(e.target.value);
+                setConfirmStep(0);
+                setSelectedAccount(null);
+                setSelectedWarehouse(null);
+              }}
+            >
               <option value="Accounts">Accounts</option>
               <option value="Warehouses">Warehouses</option>
             </select>
@@ -177,7 +176,7 @@ const WarehouseSelectionPage = () => {
                   onChange={(e) => {
                     const id = parseInt(e.target.value);
                     const acc = accounts.find((a) => a.id === id);
-                    setSelectedAccount(acc);
+                    setSelectedAccount(acc || null);
                     setConfirmStep(0);
                   }}
                 >
@@ -199,7 +198,7 @@ const WarehouseSelectionPage = () => {
                   onChange={(e) => {
                     const id = parseInt(e.target.value);
                     const wh = warehouses.find((w) => w.id === id);
-                    setSelectedWarehouse(wh);
+                    setSelectedWarehouse(wh || null);
                     setConfirmStep(0);
                   }}
                 >
@@ -216,9 +215,8 @@ const WarehouseSelectionPage = () => {
             {(selectedAccount || selectedWarehouse) ? (
               <>
                 <p>
-                  Are you sure you want to remove <strong>
-                    {selectedAccount?.username || selectedWarehouse?.name}
-                  </strong>?
+                  Are you sure you want to remove{" "}
+                  <strong>{selectedAccount?.username || selectedWarehouse?.name}</strong>?
                 </p>
                 <button onClick={handleDelete}>
                   {confirmStep === 0 ? "Confirm Delete" : "Yes, Delete Permanently"}
