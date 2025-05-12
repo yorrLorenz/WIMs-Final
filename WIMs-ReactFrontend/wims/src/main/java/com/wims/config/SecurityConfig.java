@@ -17,8 +17,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.Customizer;
 
 @Configuration
-@EnableWebSecurity // <-- Add this
+@EnableWebSecurity
 public class SecurityConfig {
+
     private final CustomUserDetailsService userDetailsService;
 
     public SecurityConfig(CustomUserDetailsService userDetailsService) {
@@ -42,8 +43,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
-            .cors(Customizer.withDefaults())
+            .csrf(csrf -> csrf.disable()) // disable for simplicity with session + REST
+            .cors(Customizer.withDefaults()) // uses CorsConfig if present
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/login").permitAll()
                 .requestMatchers("/api/**").authenticated()
@@ -52,8 +53,7 @@ public class SecurityConfig {
             .sessionManagement(sess -> sess
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
             )
-            .httpBasic(Customizer.withDefaults())
-            .exceptionHandling(exceptions -> exceptions
+            .exceptionHandling(ex -> ex
                 .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
             );
 
