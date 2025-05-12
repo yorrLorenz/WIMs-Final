@@ -21,27 +21,26 @@ const WarehouseDashboard = () => {
   const [showAll, setShowAll] = useState(false);
 
   const fetchLogs = () => {
-  fetch(`https://wims-w48m.onrender.com/api/dashboard/${encodeURIComponent(warehouseId)}`, {
-    method: "GET",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-  })
-    .then((res) => {
-      if (!res.ok) throw new Error("Failed to load dashboard");
-      return res.json();
+    fetch(`https://wims-w48m.onrender.com/api/dashboard/${encodeURIComponent(warehouseId)}`, {
+      method: "GET",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
     })
-    .then((data) => setLogs(data.logs || []))
-    .catch((err) => {
-      console.error(err);
-      toast.error("Failed to load dashboard.");
-      setLogs([]);
-    });
-};
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to load dashboard");
+        return res.json();
+      })
+      .then((data) => setLogs(data.logs || []))
+      .catch((err) => {
+        console.error(err);
+        toast.error("Failed to load dashboard.");
+        setLogs([]);
+      });
+  };
 
-useEffect(() => {
-  fetchLogs();
-}, [warehouseId]);
-
+  useEffect(() => {
+    fetchLogs();
+  }, [warehouseId]);
 
   useEffect(() => {
     const interval = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -89,18 +88,17 @@ useEffect(() => {
       });
 
       if (res.ok) {
-  setShowAddModal(false);
-  setFormData({
-    action: "Restocked",
-    item: "",
-    location: "",
-    groupId: "",
-    units: 1,
-  });
-  toast.success("Transaction added!");
-  fetchLogs(); // ✅ just refetch logs instead of reloading page
-}
- else {
+        setShowAddModal(false);
+        setFormData({
+          action: "Restocked",
+          item: "",
+          location: "",
+          groupId: "",
+          units: 1,
+        });
+        toast.success("Transaction added!");
+        fetchLogs(); // ✅ refresh logs in-place instead of reloading
+      } else {
         const text = await res.text();
         toast.error("Failed to add: " + text);
       }
