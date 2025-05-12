@@ -220,45 +220,51 @@ const WarehouseDashboard = () => {
                     name="groupId"
                     value={formData.groupId}
                     onChange={async (e) => {
-                      const groupId = e.target.value.trim();
-                      setFormData((prev) => ({ ...prev, groupId }));
+  const groupId = e.target.value.trim();
+  setFormData((prev) => ({ ...prev, groupId }));
 
-                      if (!groupId) {
-                        toast.error("Group ID cannot be empty");
-                        return;
-                      }
+  if (!groupId) {
+    toast.error("Group ID cannot be empty");
+    return;
+  }
 
-                      try {
-                        const res = await fetch(`https://wims-w48m.onrender.com/api/logs/group/${groupId}`, {
-                          method: "POST",
-                          credentials: "include",
-                          headers: { "Content-Type": "application/json" },
-                        });
+  try {
+    const res = await fetch(`https://wims-w48m.onrender.com/api/logs/group/${groupId}`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+    });
 
-                        if (res.ok) {
-                          const result = await res.json();
-                          const logs = Array.isArray(result) ? result : [result];
-                          logs.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
-                          const latestValid = logs.find((log) => log.action !== "Removed");
+    const result = await res.json();
+    const logs = Array.isArray(result) ? result : [result];
 
-                          if (!latestValid) {
-                            toast.error("No valid logs for this Group ID.");
-                            return;
-                          }
+    if (!res.ok || !logs.length) {
+      toast.error("Invalid Group ID");
+      return;
+    }
 
-                          setFormData((prev) => ({
-                            ...prev,
-                            item: latestValid.item.split(" (")[0],
-                            location: prev.action === "Removed" ? latestValid.location : "",
-                            units: latestValid.units || 1,
-                          }));
-                        } else {
-                          toast.error("Invalid Group ID");
-                        }
-                      } catch {
-                        toast.error("Failed to fetch logs");
-                      }
-                    }}
+    logs.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
+    const latestValid = logs.find((log) => log.action !== "Removed");
+
+    if (!latestValid) {
+      toast.error("All units already removed for this Group ID.");
+      return;
+    }
+
+    const maxUnits = latestValid.units || 1;
+
+    setFormData((prev) => ({
+      ...prev,
+      item: latestValid.item.split(" (")[0],
+      location: prev.action === "Removed" ? latestValid.location : "",
+      units: maxUnits,
+    }));
+  } catch (err) {
+    console.error("Error fetching logs:", err);
+    toast.error("Failed to fetch logs");
+  }
+}}
+
                   />
 
                   <label>Item:</label>
