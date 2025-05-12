@@ -230,7 +230,7 @@ const WarehouseDashboard = () => {
 
   try {
     const res = await fetch(`https://wims-w48m.onrender.com/api/logs/group/${groupId}`, {
-      method: "POST",
+      method: "GET",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
     });
