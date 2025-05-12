@@ -21,15 +21,22 @@ const WarehouseDashboard = () => {
   const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
-    fetch(`https://wims-w48m.onrender.com/api/dashboard/${encodeURIComponent(warehouseId)}`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
+  fetch(`https://wims-w48m.onrender.com/api/dashboard/${encodeURIComponent(warehouseId)}`, {
+    method: "GET", // ✅ change this to GET
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+  })
+    .then((res) => {
+      if (!res.ok) throw new Error("Failed to load dashboard");
+      return res.json();
     })
-      .then((res) => res.json())
-      .then((data) => setLogs(data.logs))
-      .catch((err) => console.error(err));
-  }, [warehouseId]);
+    .then((data) => setLogs(data.logs || [])) // ✅ guard against undefined
+    .catch((err) => {
+      console.error(err);
+      toast.error("Failed to load dashboard.");
+      setLogs([]); // fallback to prevent crash on .slice()
+    });
+}, [warehouseId]);
 
   useEffect(() => {
     const interval = setInterval(() => setCurrentTime(new Date()), 1000);
