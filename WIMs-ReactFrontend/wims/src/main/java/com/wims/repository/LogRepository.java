@@ -23,5 +23,6 @@ public interface LogRepository extends JpaRepository<Log, Long> {
    int countByGroupIdStartingWith(String prefix);
 
 
+
 }
     
