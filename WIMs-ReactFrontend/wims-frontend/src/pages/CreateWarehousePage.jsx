@@ -54,7 +54,7 @@ const CreateWarehousePage = () => {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body), // ✅ FIXED
+        body: JSON.stringify(body), // ✅ FIXED HERE
       });
 
       if (res.status === 409) {
