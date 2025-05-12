@@ -20,9 +20,9 @@ const WarehouseDashboard = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showAll, setShowAll] = useState(false);
 
-  useEffect(() => {
+  const fetchLogs = () => {
   fetch(`https://wims-w48m.onrender.com/api/dashboard/${encodeURIComponent(warehouseId)}`, {
-    method: "GET", // ✅ change this to GET
+    method: "GET",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
   })
@@ -30,13 +30,18 @@ const WarehouseDashboard = () => {
       if (!res.ok) throw new Error("Failed to load dashboard");
       return res.json();
     })
-    .then((data) => setLogs(data.logs || [])) // ✅ guard against undefined
+    .then((data) => setLogs(data.logs || []))
     .catch((err) => {
       console.error(err);
       toast.error("Failed to load dashboard.");
-      setLogs([]); // fallback to prevent crash on .slice()
+      setLogs([]);
     });
+};
+
+useEffect(() => {
+  fetchLogs();
 }, [warehouseId]);
+
 
   useEffect(() => {
     const interval = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -84,17 +89,18 @@ const WarehouseDashboard = () => {
       });
 
       if (res.ok) {
-        setShowAddModal(false);
-        setFormData({
-          action: "Restocked",
-          item: "",
-          location: "",
-          groupId: "",
-          units: 1,
-        });
-        toast.success("Transaction added!");
-        window.location.reload();
-      } else {
+  setShowAddModal(false);
+  setFormData({
+    action: "Restocked",
+    item: "",
+    location: "",
+    groupId: "",
+    units: 1,
+  });
+  toast.success("Transaction added!");
+  fetchLogs(); // ✅ just refetch logs instead of reloading page
+}
+ else {
         const text = await res.text();
         toast.error("Failed to add: " + text);
       }
