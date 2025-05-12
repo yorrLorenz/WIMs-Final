@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+/* 
 @RestController
 @RequestMapping("/api/logs")
 
@@ -40,3 +40,4 @@ public ResponseEntity<?> updateLog(@PathVariable Long id, @RequestBody Log updat
 
 
 }
+*/
