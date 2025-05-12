@@ -3,7 +3,7 @@ import DashboardLayout from "../layouts/DashboardLayout";
 import { toast, ToastContainer } from "react-toastify";
 import { FaSearch } from "react-icons/fa";
 import "react-toastify/dist/ReactToastify.css";
-import "./AdminDashboard.css";
+import "./Admindashboard.css";
 
 const AdminDashboard = () => {
   const [logs, setLogs] = useState([]);
