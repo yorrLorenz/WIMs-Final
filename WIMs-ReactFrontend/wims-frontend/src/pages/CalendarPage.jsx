@@ -42,8 +42,8 @@ const CalendarPage = () => {
     if (!isAdmin && !warehouse) return;
 
     const url = isAdmin
-      ? `http://localhost:8080/api/accounts/dashboard-by-date?date=${formattedDate}`
-      : `http://localhost:8080/api/dashboard-by-date?date=${formattedDate}&warehouse=${encodeURIComponent(warehouse)}`;
+      ? `http://wims-w48m.onrender.com/api/accounts/dashboard-by-date?date=${formattedDate}`
+      : `http://wims-w48m.onrender.com/api/dashboard-by-date?date=${formattedDate}&warehouse=${encodeURIComponent(warehouse)}`;
 
     fetch(url, { credentials: "include" })
       .then((res) => res.json())

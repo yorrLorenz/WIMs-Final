@@ -4,7 +4,7 @@ const MyLogs = () => {
   const [logs, setLogs] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/accounts/my-logs", {
+    fetch("http://wims-w48m.onrender.com/api/accounts/my-logs", {
       credentials: "include",
     })
       .then((res) => res.json())

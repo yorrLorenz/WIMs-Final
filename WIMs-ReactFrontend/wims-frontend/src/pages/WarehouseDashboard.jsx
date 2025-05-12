@@ -21,7 +21,7 @@ const WarehouseDashboard = () => {
   const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
-    fetch(`http://localhost:8080/api/dashboard/${encodeURIComponent(warehouseId)}`, {
+    fetch(`http://wims-w48m.onrender.com/api/dashboard/${encodeURIComponent(warehouseId)}`, {
       credentials: "include",
     })
       .then((res) => res.json())
@@ -71,7 +71,7 @@ const WarehouseDashboard = () => {
       const username = localStorage.getItem("username");
       const payload = { ...formData, warehouse: warehouseId, username };
 
-      const res = await fetch("http://localhost:8080/api/products/add", {
+      const res = await fetch("http://wims-w48m.onrender.com/api/products/add", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -246,7 +246,7 @@ const WarehouseDashboard = () => {
                       }
 
                       try {
-                        const res = await fetch(`http://localhost:8080/api/logs/group/${groupId}`, {
+                        const res = await fetch(`http://wims-w48m.onrender.com/api/logs/group/${groupId}`, {
                           credentials: "include",
                         });
 

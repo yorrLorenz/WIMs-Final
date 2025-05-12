@@ -50,7 +50,7 @@ const CreateWarehousePage = () => {
     };
 
     try {
-      const res = await fetch("http://localhost:8080/api/warehouses", {
+      const res = await fetch("http://wims-w48m.onrender.com/api/warehouses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

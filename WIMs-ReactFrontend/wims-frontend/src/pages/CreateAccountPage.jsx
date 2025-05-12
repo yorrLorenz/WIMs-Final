@@ -20,7 +20,7 @@ const CreateAccountPage = () => {
   const webcamRef = useRef(null);
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/warehouses", { credentials: "include" })
+    fetch("http://wims-w48m.onrender.com/api/warehouses", { credentials: "include" })
       .then((res) => res.json())
       .then((data) => setWarehouses(data))
       .catch((err) => console.error("Failed to load warehouses", err));
@@ -70,7 +70,7 @@ const CreateAccountPage = () => {
     }
 
     try {
-      const res = await fetch("http://localhost:8080/api/accounts/create", {
+      const res = await fetch("http://wims-w48m.onrender.com/api/accounts/create", {
         method: "POST",
         credentials: "include",
         body: formData,

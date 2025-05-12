@@ -22,7 +22,7 @@ const AddProduct = () => {
 
     if (name === "groupId" && (formData.action === "Removed" || formData.action === "Move")) {
       try {
-        const res = await fetch(`http://localhost:8080/api/logs/group/${encodeURIComponent(value)}`, {
+        const res = await fetch(`http://wims-w48m.onrender.com/api/logs/group/${encodeURIComponent(value)}`, {
           credentials: "include",
         });
         if (res.ok) {
@@ -65,7 +65,7 @@ const AddProduct = () => {
     }
 
     try {
-      const res = await fetch("http://localhost:8080/api/products/add", {
+      const res = await fetch("http://wims-w48m.onrender.com/api/products/add", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },

@@ -8,14 +8,14 @@ const AccountInfo = () => {
   const [showAll, setShowAll] = useState(false); // ✅ pagination toggle
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/accounts/me", {
+    fetch("http://wims-w48m.onrender.com/api/accounts/me", {
       credentials: "include",
     })
       .then((res) => res.json())
       .then((data) => setUser(data))
       .catch((err) => console.error("Failed to fetch user", err));
 
-    fetch("http://localhost:8080/api/accounts/my-logs", {
+    fetch("http://wims-w48m.onrender.com/api/accounts/my-logs", {
       credentials: "include",
     })
       .then((res) => res.json())
@@ -43,7 +43,7 @@ const AccountInfo = () => {
           <div className="profile-picture">
             {user.imageUrl ? (
               <img
-                src={`http://localhost:8080${user.imageUrl}`}
+                src={`http://wims-w48m.onrender.com${user.imageUrl}`}
                 alt="Profile"
               />
             ) : (
