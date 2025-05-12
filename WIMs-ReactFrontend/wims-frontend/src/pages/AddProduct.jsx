@@ -23,7 +23,10 @@ const AddProduct = () => {
     if (name === "groupId" && (formData.action === "Removed" || formData.action === "Move")) {
       try {
         const res = await fetch(`https://wims-w48m.onrender.com/api/logs/group/${encodeURIComponent(value)}`, {
-          credentials: "include",
+          method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
         });
         if (res.ok) {
           const data = await res.json();
@@ -66,10 +69,10 @@ const AddProduct = () => {
 
     try {
       const res = await fetch("https://wims-w48m.onrender.com/api/products/add", {
-        method: "POST",
+       method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify(form),
       });
 
       if (res.ok) {

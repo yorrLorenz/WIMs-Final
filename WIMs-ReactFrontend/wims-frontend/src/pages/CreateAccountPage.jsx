@@ -73,7 +73,8 @@ const CreateAccountPage = () => {
       const res = await fetch("https://wims-w48m.onrender.com/api/accounts/create", {
         method: "POST",
         credentials: "include",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
       });
 
       if (res.ok) {

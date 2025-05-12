@@ -9,14 +9,20 @@ const AccountInfo = () => {
 
   useEffect(() => {
     fetch("https://wims-w48m.onrender.com/api/accounts/me", {
-      credentials: "include",
+      method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
     })
       .then((res) => res.json())
       .then((data) => setUser(data))
       .catch((err) => console.error("Failed to fetch user", err));
 
     fetch("https://wims-w48m.onrender.com/api/accounts/my-logs", {
-      credentials: "include",
+      method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
     })
       .then((res) => res.json())
       .then((data) => setLogs(data))

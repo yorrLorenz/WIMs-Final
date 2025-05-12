@@ -22,7 +22,10 @@ const WarehouseDashboard = () => {
 
   useEffect(() => {
     fetch(`https://wims-w48m.onrender.com/api/dashboard/${encodeURIComponent(warehouseId)}`, {
-      credentials: "include",
+      method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
     })
       .then((res) => res.json())
       .then((data) => setLogs(data.logs))
@@ -75,7 +78,7 @@ const WarehouseDashboard = () => {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(form),
       });
 
       if (res.ok) {
@@ -247,7 +250,10 @@ const WarehouseDashboard = () => {
 
                       try {
                         const res = await fetch(`https://wims-w48m.onrender.com/api/logs/group/${groupId}`, {
-                          credentials: "include",
+                          method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
                         });
 
                         if (res.ok) {

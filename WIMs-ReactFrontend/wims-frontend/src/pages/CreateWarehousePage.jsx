@@ -52,9 +52,9 @@ const CreateWarehousePage = () => {
     try {
       const res = await fetch("https://wims-w48m.onrender.com/api/warehouses", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(body),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
       });
 
       if (res.status === 409) {
