@@ -15,7 +15,7 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch("http://wims-w48m.onrender.com/api/login", {
+      const res = await fetch("https://wims-w48m.onrender.com/api/login", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },

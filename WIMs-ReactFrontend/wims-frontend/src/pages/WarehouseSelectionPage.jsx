@@ -28,7 +28,7 @@ const WarehouseSelectionPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("http://wims-w48m.onrender.com/api/warehouses", { credentials: "include" })
+    fetch("https://wims-w48m.onrender.com/api/warehouses", { credentials: "include" })
       .then((res) => res.json())
       .then((data) => {
         setWarehouses(data);
@@ -59,7 +59,7 @@ const WarehouseSelectionPage = () => {
   };
 
   const openManageModal = () => {
-    fetch("http://wims-w48m.onrender.com/api/accounts", { credentials: "include" })
+    fetch("https://wims-w48m.onrender.com/api/accounts", { credentials: "include" })
       .then((res) => res.json())
       .then((data) => {
         setAccounts(data);
@@ -86,7 +86,7 @@ const WarehouseSelectionPage = () => {
     }
 
     if (selectedType === "Accounts" && selectedAccount) {
-      fetch(`http://wims-w48m.onrender.com/api/accounts/${selectedAccount.id}`, {
+      fetch(`https://wims-w48m.onrender.com/api/accounts/${selectedAccount.id}`, {
         method: "DELETE",
         credentials: "include",
       })
@@ -103,7 +103,7 @@ const WarehouseSelectionPage = () => {
     }
 
     if (selectedType === "Warehouses" && selectedWarehouse) {
-      fetch(`http://wims-w48m.onrender.com/api/warehouses/${selectedWarehouse.id}`, {
+      fetch(`https://wims-w48m.onrender.com/api/warehouses/${selectedWarehouse.id}`, {
         method: "DELETE",
         credentials: "include",
       })

@@ -15,7 +15,7 @@ const AdminDashboard = () => {
   const [searchError, setSearchError] = useState("");
 
   useEffect(() => {
-    fetch("http://wims-w48m.onrender.com/api/admin/logs", {
+    fetch("https://wims-w48m.onrender.com/api/admin/logs", {
       credentials: "include",
     })
       .then((res) => res.json())
@@ -31,7 +31,7 @@ const AdminDashboard = () => {
 
   const handleSearch = async () => {
     try {
-      const res = await fetch(`http://wims-w48m.onrender.com/api/logs/group/${encodeURIComponent(groupId)}`, {
+      const res = await fetch(`https://wims-w48m.onrender.com/api/logs/group/${encodeURIComponent(groupId)}`, {
         credentials: "include",
       });
       if (!res.ok) throw new Error("Group ID not found");
