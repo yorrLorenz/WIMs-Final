@@ -28,13 +28,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/warehouses")
-@CrossOrigin(
-    origins = {
-        "http://localhost:5173",
-        "https://wims-rosy.vercel.app"
-    },
-    allowCredentials = "true"
-)
 public class WarehouseApiController {
     
 @Autowired

@@ -25,13 +25,7 @@ import org.springframework.security.core.Authentication;
 
 @RestController
 @RequestMapping("/api/accounts")
-@CrossOrigin(
-    origins = {
-        "http://localhost:5173",
-        "https://wims-rosy.vercel.app"
-    },
-    allowCredentials = "true"
-)
+
 public class AccountApiController {
 
     @Autowired

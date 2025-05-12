@@ -17,7 +17,6 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/products")
-@CrossOrigin(origins = {"http://localhost:5173", "https://wims-rosy.vercel.app"}, allowCredentials = "true")
 public class ProductController {
 
     @Autowired private ProductRepository productRepository;

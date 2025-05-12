@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/admin")
-@CrossOrigin(origins = { "http://localhost:5173", "https://wims-rosy.vercel.app" }, allowCredentials = "true")
 public class AdminApiController {
 
     private final LogRepository logRepository;

@@ -16,13 +16,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/logs")
-@CrossOrigin(
-    origins = {
-        "http://localhost:5173",
-        "https://wims-rosy.vercel.app"
-    },
-    allowCredentials = "true"
-)
+
 public class LogRestController {
 
     @Autowired
