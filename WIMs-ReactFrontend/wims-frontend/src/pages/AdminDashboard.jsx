@@ -2,8 +2,10 @@ import React, { useEffect, useState } from "react";
 import DashboardLayout from "../layouts/DashboardLayout";
 import { toast, ToastContainer } from "react-toastify";
 import { FaSearch } from "react-icons/fa";
+import SockJS from "sockjs-client";
+import { Client } from "@stomp/stompjs";
 import "react-toastify/dist/ReactToastify.css";
-import "./AdminDashboardd.css"; // Optional if you need styles
+import "./AdminDashboardd.css";
 
 const AdminDashboard = () => {
   const [logs, setLogs] = useState([]);
@@ -14,6 +16,7 @@ const AdminDashboard = () => {
   const [groupLogs, setGroupLogs] = useState([]);
   const [searchError, setSearchError] = useState("");
 
+  // Initial fetch
   useEffect(() => {
     fetch("https://wims-w48m.onrender.com/api/admin/logs", {
       method: "GET",
@@ -22,6 +25,28 @@ const AdminDashboard = () => {
       .then((res) => res.json())
       .then((data) => setLogs(data.logs))
       .catch((err) => console.error("Failed to load admin logs", err));
+  }, []);
+
+  // WebSocket listener for all logs
+  useEffect(() => {
+    const socket = new SockJS("https://wims-w48m.onrender.com/ws");
+    const stompClient = new Client({
+      webSocketFactory: () => socket,
+      onConnect: () => {
+        stompClient.subscribe("/topic/logs/admin", (message) => {
+          const newLog = JSON.parse(message.body);
+          setLogs((prevLogs) => [newLog, ...prevLogs]);
+        });
+      },
+      onStompError: (frame) => {
+        console.error("WebSocket error", frame);
+      },
+    });
+
+    stompClient.activate();
+    return () => {
+      stompClient.deactivate();
+    };
   }, []);
 
   const toggleExpand = (logId) => {

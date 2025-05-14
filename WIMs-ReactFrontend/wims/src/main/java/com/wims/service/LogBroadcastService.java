@@ -14,7 +14,9 @@ public class LogBroadcastService {
 
     public void broadcastLogUpdate(DashboardLogDTO log) {
         if (log.getWarehouse() != null && !log.getWarehouse().isBlank()) {
-            messagingTemplate.convertAndSend("/topic/logs/" + log.getWarehouse(), log);
+            messagingTemplate.convertAndSend("/topic/logs/" + log.getWarehouse(), log); // for clerk
+            messagingTemplate.convertAndSend("/topic/logs/admin", log); // for admin
+
         }
     }
 }

@@ -9,6 +9,8 @@ import {
   addMonths,
   subMonths,
 } from "date-fns";
+import SockJS from "sockjs-client";
+import { Client } from "@stomp/stompjs";
 import "./CalendarPage.css";
 
 const CalendarPage = () => {
@@ -37,7 +39,7 @@ const CalendarPage = () => {
     }
   }, [isAdmin]);
 
-  useEffect(() => {
+  const fetchLogs = () => {
     const formattedDate = format(selectedDate, "yyyy-MM-dd");
     if (!isAdmin && !warehouse) return;
 
@@ -55,6 +57,36 @@ const CalendarPage = () => {
         console.error("Error loading logs", err);
         setLogs([]);
       });
+  };
+
+  useEffect(() => {
+    fetchLogs();
+  }, [selectedDate, warehouse, isAdmin]);
+
+  // 🧠 WebSocket real-time updates
+  useEffect(() => {
+    const socket = new SockJS("https://wims-w48m.onrender.com/ws");
+    const stompClient = new Client({
+      webSocketFactory: () => socket,
+      onConnect: () => {
+        const topic = isAdmin ? "/topic/logs/admin" : `/topic/logs/${warehouse}`;
+        stompClient.subscribe(topic, (message) => {
+          const newLog = JSON.parse(message.body);
+          const logDate = new Date(newLog.dateTime);
+          if (isSameDay(logDate, selectedDate)) {
+            setLogs((prevLogs) => [newLog, ...prevLogs]);
+          }
+        });
+      },
+      onStompError: (frame) => {
+        console.error("WebSocket error", frame);
+      },
+    });
+
+    stompClient.activate();
+    return () => {
+      stompClient.deactivate();
+    };
   }, [selectedDate, warehouse, isAdmin]);
 
   const renderLogDetails = (log) => {
