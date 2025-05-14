@@ -51,11 +51,13 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
             .requestMatchers("/api/**").authenticated()
             .anyRequest().permitAll()
         )
-        .sessionManagement(session -> session
-            .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-            .maximumSessions(1) // ✅ only 1 session allowed
-            .maxSessionsPreventsLogin(true) // ✅ block second login
-        )
+        .sessionManagement(sess -> sess
+    .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+    .maximumSessions(1)
+    .maxSessionsPreventsLogin(true)
+)
+
+        
         .exceptionHandling(ex -> ex
             .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
         );
