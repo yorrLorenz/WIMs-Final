@@ -175,49 +175,48 @@ const AdminDashboard = () => {
             <div className="modal-content">
               <h3>Search Logs</h3>
 
-              <label>
-                <input
-                  type="radio"
-                  name="searchMode"
-                  value="group"
-                  checked={searchMode === "group"}
-                  onChange={() => setSearchMode("group")}
-                />
-                Group ID
-              </label>
-              <label style={{ marginLeft: "1rem" }}>
-                <input
-                  type="radio"
-                  name="searchMode"
-                  value="user"
-                  checked={searchMode === "user"}
-                  onChange={() => setSearchMode("user")}
-                />
-                User ID
-              </label>
+<label htmlFor="searchType">Search by:</label>
+<select
+  id="searchType"
+  value={searchMode}
+  onChange={(e) => setSearchMode(e.target.value)}
+  style={{
+    marginBottom: "1rem",
+    padding: "0.5rem",
+    border: "1px solid #ccc",
+    borderRadius: "6px",
+    width: "100%",
+  }}
+>
+  <option value="group">Group ID</option>
+  <option value="user">User ID</option>
+</select>
 
-              {searchMode === "group" ? (
-                <input
-                  type="text"
-                  placeholder="Enter Group ID"
-                  value={groupId}
-                  onChange={(e) => setGroupId(e.target.value)}
-                />
-              ) : (
-                <input
-                  type="number"
-                  placeholder="Enter User ID"
-                  value={userId}
-                  onChange={(e) => setUserId(e.target.value)}
-                />
-              )}
+<input
+  type={searchMode === "group" ? "text" : "number"}
+  placeholder={`Enter ${searchMode === "group" ? "Group ID" : "User ID"}`}
+  value={searchMode === "group" ? groupId : userId}
+  onChange={(e) =>
+    searchMode === "group" ? setGroupId(e.target.value) : setUserId(e.target.value)
+  }
+  style={{
+    marginBottom: "1rem",
+    padding: "0.5rem",
+    border: "1px solid #ccc",
+    borderRadius: "6px",
+    width: "100%",
+  }}
+/>
 
-              <button onClick={handleSearch}>Search</button>
-              <button className="close-btn" onClick={() => setShowSearchModal(false)}>
-                Close
-              </button>
+<button onClick={handleSearch} className="brown-btn" style={{ marginBottom: "0.5rem" }}>
+  Search
+</button>
+<button className="close-btn" onClick={() => setShowSearchModal(false)}>
+  Close
+</button>
 
-              {searchError && <p className="error-text">{searchError}</p>}
+{searchError && <p className="error-text">{searchError}</p>}
+
 
               {searchResults.length > 0 && (
                 <div className="search-results">
