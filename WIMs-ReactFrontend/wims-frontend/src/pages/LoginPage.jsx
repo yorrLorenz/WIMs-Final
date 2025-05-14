@@ -33,18 +33,20 @@ const LoginPage = () => {
           navigate("/select-warehouse");
         }
       } else {
-        // Try to parse the backend error message
-        let msg = "Login failed";
-        try {
-          const result = await res.json();
-          msg = result.message || msg;
-        } catch (e) {
-          if (res.status === 401) {
-            msg = "Invalid credentials or account already active on another device.";
-          }
-        }
-        setError(msg);
-      }
+  let msg = "Login failed";
+  try {
+    const result = await res.json();
+    msg = result.message || msg;
+  } catch (e) {
+    if (res.status === 401) {
+      msg = "Invalid credentials.";
+    } else if (res.status === 403) {
+      msg = "This account is already active on another device.";
+    }
+  }
+  setError(msg);
+}
+
     } catch (err) {
       console.error("Login error", err);
       setError("Network error");
