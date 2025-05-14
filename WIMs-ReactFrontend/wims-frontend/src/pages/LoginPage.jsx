@@ -1,4 +1,3 @@
-// src/pages/LoginPage.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./LoginPage.css";
@@ -34,8 +33,17 @@ const LoginPage = () => {
           navigate("/select-warehouse");
         }
       } else {
-        const msg = await res.json();
-        setError(msg.message || "Login failed");
+        // Try to parse the backend error message
+        let msg = "Login failed";
+        try {
+          const result = await res.json();
+          msg = result.message || msg;
+        } catch (e) {
+          if (res.status === 401) {
+            msg = "Invalid credentials or account already active on another device.";
+          }
+        }
+        setError(msg);
       }
     } catch (err) {
       console.error("Login error", err);
