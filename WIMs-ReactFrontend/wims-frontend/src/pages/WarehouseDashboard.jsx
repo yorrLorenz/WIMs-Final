@@ -206,7 +206,7 @@ const WarehouseDashboard = () => {
           <div className="modal">
             <div className="modal-content">
               <h3>{getModalTitle()}</h3>
-              <h3>{getModalTitle()}</h3>
+              
 
 <label>Action:</label>
 <select
