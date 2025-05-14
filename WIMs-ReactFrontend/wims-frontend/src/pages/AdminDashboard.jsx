@@ -11,9 +11,12 @@ const AdminDashboard = () => {
   const [logs, setLogs] = useState([]);
   const [expanded, setExpanded] = useState({});
   const [showAll, setShowAll] = useState(false);
+
   const [showSearchModal, setShowSearchModal] = useState(false);
+  const [searchMode, setSearchMode] = useState("group");
   const [groupId, setGroupId] = useState("");
-  const [groupLogs, setGroupLogs] = useState([]);
+  const [userId, setUserId] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
   const [searchError, setSearchError] = useState("");
 
   // Initial fetch
@@ -56,21 +59,26 @@ const AdminDashboard = () => {
   const formatDate = (dateTimeStr) => new Date(dateTimeStr).toLocaleString();
 
   const handleSearch = async () => {
+    setSearchError("");
     try {
-      const res = await fetch(`https://wims-w48m.onrender.com/api/logs/group/${encodeURIComponent(groupId)}`, {
-        method: "GET",
-        credentials: "include",
-      });
+      const url =
+        searchMode === "group"
+          ? `https://wims-w48m.onrender.com/api/logs/group/${encodeURIComponent(groupId)}`
+          : `https://wims-w48m.onrender.com/api/accounts/logs/by-userid/${userId}`;
 
-      if (!res.ok) throw new Error("Group ID not found");
+      const res = await fetch(url, { credentials: "include" });
+      if (!res.ok) throw new Error("Search failed");
 
-      const log = await res.json();
-      const related = logs.filter((l) => l.groupId === log.groupId);
-      setGroupLogs(related);
-      setSearchError("");
+      const result = await res.json();
+      const logsArray = Array.isArray(result) ? result : [result];
+      if (!logsArray.length) throw new Error("No logs found");
+
+      setSearchResults(logsArray);
     } catch (err) {
-      setSearchError("No logs found for this Group ID.");
-      setGroupLogs([]);
+      setSearchError(
+        "No logs found for this " + (searchMode === "group" ? "Group ID." : "User ID.")
+      );
+      setSearchResults([]);
     }
   };
 
@@ -110,7 +118,9 @@ const AdminDashboard = () => {
                   <tr>
                     <td style={{ textAlign: "center" }}>
                       {log.groupId && (
-                        <button className="toggle-btn" onClick={() => toggleExpand(log.id)}>☰</button>
+                        <button className="toggle-btn" onClick={() => toggleExpand(log.id)}>
+                          ☰
+                        </button>
                       )}
                     </td>
                     <td>{formatDate(log.dateTime)}</td>
@@ -134,9 +144,8 @@ const AdminDashboard = () => {
                                   {rLog.action === "Move"
                                     ? ` (Moved ${rLog.units} units from ${rLog.previousLocation ?? "?"} → ${rLog.location}${rLog.groupId !== log.groupId ? `, New ID: ${rLog.groupId}` : ""})`
                                     : rLog.action === "Removed"
-                                      ? ` (Removed ${rLog.units} units${rLog.remainingUnits != null ? `, ${rLog.remainingUnits} left` : ""})`
-                                      : ` (Item: ${rLog.item}, Location: ${rLog.location}, Units: ${rLog.units})`
-                                  }
+                                    ? ` (Removed ${rLog.units} units${rLog.remainingUnits != null ? `, ${rLog.remainingUnits} left` : ""})`
+                                    : ` (Item: ${rLog.item}, Location: ${rLog.location}, Units: ${rLog.units})`}
                                 </li>
                               ))
                             ) : (
@@ -164,23 +173,57 @@ const AdminDashboard = () => {
         {showSearchModal && (
           <div className="modal-overlay">
             <div className="modal-content">
-              <h3>Search Logs by Group ID</h3>
-              <input
-                type="text"
-                placeholder="Enter Group ID"
-                value={groupId}
-                onChange={(e) => setGroupId(e.target.value)}
-              />
+              <h3>Search Logs</h3>
+
+              <label>
+                <input
+                  type="radio"
+                  name="searchMode"
+                  value="group"
+                  checked={searchMode === "group"}
+                  onChange={() => setSearchMode("group")}
+                />
+                Group ID
+              </label>
+              <label style={{ marginLeft: "1rem" }}>
+                <input
+                  type="radio"
+                  name="searchMode"
+                  value="user"
+                  checked={searchMode === "user"}
+                  onChange={() => setSearchMode("user")}
+                />
+                User ID
+              </label>
+
+              {searchMode === "group" ? (
+                <input
+                  type="text"
+                  placeholder="Enter Group ID"
+                  value={groupId}
+                  onChange={(e) => setGroupId(e.target.value)}
+                />
+              ) : (
+                <input
+                  type="number"
+                  placeholder="Enter User ID"
+                  value={userId}
+                  onChange={(e) => setUserId(e.target.value)}
+                />
+              )}
+
               <button onClick={handleSearch}>Search</button>
-              <button className="close-btn" onClick={() => setShowSearchModal(false)}>Close</button>
+              <button className="close-btn" onClick={() => setShowSearchModal(false)}>
+                Close
+              </button>
 
               {searchError && <p className="error-text">{searchError}</p>}
 
-              {groupLogs.length > 0 && (
+              {searchResults.length > 0 && (
                 <div className="search-results">
-                  <h4>Related Logs</h4>
+                  <h4>Search Results</h4>
                   <ul>
-                    {groupLogs.map((log) => (
+                    {searchResults.map((log) => (
                       <li key={log.id}>
                         [{formatDate(log.dateTime)}] {log.username} - {log.action} - {log.item} at {log.location} ({log.units} units)
                       </li>

@@ -115,4 +115,28 @@ public class AccountApiController {
         userRepository.deleteById(id);
         return ResponseEntity.ok("Account deleted successfully");
     }
+
+    @GetMapping("/logs/by-userid/{userId}")
+public ResponseEntity<List<DashboardLogDTO>> getLogsByUserId(@PathVariable Long userId) {
+    List<Log> logs = logRepository.findByUserIdOrderByDateTimeDesc(userId);
+
+    List<DashboardLogDTO> dtos = logs.stream()
+        .map(log -> new DashboardLogDTO(
+            log.getId(),
+            log.getDateTime(),
+            log.getUsername(),
+            log.getAction(),
+            log.getItem(),
+            log.getWarehouse(),
+            log.getLocation(),
+            log.getGroupId(),
+            log.getUnits(),
+            log.getRemainingUnits(),
+            log.getPreviousLocation()
+        ))
+        .collect(Collectors.toList());
+
+    return ResponseEntity.ok(dtos);
+}
+
 }
