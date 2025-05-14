@@ -117,7 +117,7 @@
 }
 
 .modal button {
-  background-color: #432e1b;
+  background-color: red;
   color: white;
   font-weight: bold;
   cursor: pointer;
@@ -125,7 +125,7 @@
 }
 
 .modal button:hover {
-  background-color: #2f1e10;
+  background-color: red;
 }
 
 
