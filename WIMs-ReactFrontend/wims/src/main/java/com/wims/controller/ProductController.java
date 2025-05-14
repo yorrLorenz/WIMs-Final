@@ -3,9 +3,11 @@ package com.wims.controller;
 import com.wims.dto.DashboardLogDTO;
 import com.wims.model.Log;
 import com.wims.model.Product;
+import com.wims.model.User;
 import com.wims.model.Warehouse;
 import com.wims.repository.LogRepository;
 import com.wims.repository.ProductRepository;
+import com.wims.repository.UserRepository;
 import com.wims.repository.WarehouseRepository;
 import com.wims.service.LogBroadcastService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,17 +26,23 @@ public class ProductController {
     @Autowired private ProductRepository productRepository;
     @Autowired private LogRepository logRepository;
     @Autowired private WarehouseRepository warehouseRepository;
-    @Autowired private LogBroadcastService logBroadcastService; // ✅ added
+    @Autowired private UserRepository userRepository;
+    @Autowired private LogBroadcastService logBroadcastService;
 
     @PostMapping("/add")
     public ResponseEntity<?> addProduct(@RequestBody ProductRequest request) {
         Optional<Warehouse> warehouseOpt = warehouseRepository.findByName(request.getWarehouse());
         if (warehouseOpt.isEmpty()) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Warehouse not found");
 
+        Optional<User> userOpt = userRepository.findByUsername(request.getUsername());
+        if (userOpt.isEmpty()) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User not found");
+
+        User user = userOpt.get();
         Warehouse warehouse = warehouseOpt.get();
 
         Log log = new Log();
-        log.setUsername(request.getUsername());
+        log.setUserId(user.getId()); // ✅ store user ID
+        log.setUsername(user.getUsername()); // for display
         log.setAction(request.getAction());
         log.setWarehouse(request.getWarehouse());
         log.setDateTime(LocalDateTime.now());
@@ -127,7 +135,8 @@ public class ProductController {
                 log.setGroupId(newGroupId);
 
                 Log originalLog = new Log();
-                originalLog.setUsername(request.getUsername());
+                originalLog.setUserId(user.getId());
+                originalLog.setUsername(user.getUsername());
                 originalLog.setAction("Move");
                 originalLog.setWarehouse(original.getWarehouse());
                 originalLog.setGroupId(request.getGroupId());
@@ -138,7 +147,6 @@ public class ProductController {
                 originalLog.setPreviousLocation(oldLocation);
                 logRepository.save(originalLog);
 
-                // 🟢 also broadcast the original movement
                 DashboardLogDTO originalDto = new DashboardLogDTO(
                     originalLog.getId(),
                     originalLog.getDateTime(),
@@ -158,7 +166,6 @@ public class ProductController {
 
         logRepository.save(log);
 
-        // ✅ Broadcast log to WebSocket subscribers
         DashboardLogDTO dto = new DashboardLogDTO(
             log.getId(),
             log.getDateTime(),

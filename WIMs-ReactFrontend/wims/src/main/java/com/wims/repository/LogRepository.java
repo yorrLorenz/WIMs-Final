@@ -7,22 +7,27 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface LogRepository extends JpaRepository<Log, Long> {
+
     List<Log> findByWarehouseOrderByDateTimeDesc(String warehouse);
+
     List<Log> findByWarehouseAndDateTimeBetweenOrderByDateTimeDesc(
-        String warehouse, LocalDateTime start, LocalDateTime end);
+        String warehouse, LocalDateTime start, LocalDateTime end
+    );
+
     List<Log> findByGroupIdOrderByDateTimeDesc(String groupId);
+
     List<Log> findAllByOrderByDateTimeDesc();
 
     // For Admin logs with date filter (all warehouses)
-    List<Log> findByDateTimeBetweenOrderByDateTimeDesc(
-        LocalDateTime start, LocalDateTime end
-    );
-    List<Log> findByUsernameOrderByDateTimeDesc(String username);
+    List<Log> findByDateTimeBetweenOrderByDateTimeDesc(LocalDateTime start, LocalDateTime end);
+
+    List<Log> findByUsernameOrderByDateTimeDesc(String username); // 🟡 (can be deprecated eventually)
+
+    List<Log> findByUserIdOrderByDateTimeDesc(Long userId); // ✅ NEW: safe user-specific logs
+
     long countByWarehouseAndDateTimeBetween(String warehouse, LocalDateTime start, LocalDateTime end);
+
     List<Log> findByGroupId(String groupId);
-   int countByGroupIdStartingWith(String prefix);
 
-
-
+    int countByGroupIdStartingWith(String prefix);
 }
-    

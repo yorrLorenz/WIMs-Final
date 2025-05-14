@@ -137,3 +137,17 @@
   font-weight: bold;
   text-transform: capitalize;
 }
+
+.copy-btn {
+  margin-left: 8px;
+  background: none;
+  border: none;
+  color: #444;
+  font-size: 1rem;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.copy-btn:hover {
+  color: #97693d;
+}

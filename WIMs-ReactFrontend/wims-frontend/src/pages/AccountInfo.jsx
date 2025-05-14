@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { FaUserCircle } from "react-icons/fa";
+import { FaUserCircle, FaRegCopy } from "react-icons/fa";
+import { toast } from "react-toastify";
 import "./AccountInfo.css";
 
 const AccountInfo = () => {
@@ -24,6 +25,11 @@ const AccountInfo = () => {
       .then((data) => setLogs(data))
       .catch((err) => console.error("Failed to fetch logs", err));
   }, []);
+
+  const copyUserId = () => {
+    navigator.clipboard.writeText(user.id);
+    toast.info("User ID copied to clipboard");
+  };
 
   const renderLogDetails = (log) => {
     if (log.action === "Move") {
@@ -56,6 +62,12 @@ const AccountInfo = () => {
             <p className="account-role">
               {user.role}
               {user.role === "CLERK" && ` | ${user.warehouse}`}
+            </p>
+            <p className="account-id">
+              <strong>User ID:</strong> {user.id}
+              <button onClick={copyUserId} className="copy-btn" title="Copy User ID">
+                <FaRegCopy />
+              </button>
             </p>
           </div>
         </div>

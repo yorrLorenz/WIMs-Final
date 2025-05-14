@@ -16,6 +16,9 @@ public class Log {
     @Column(name = "date_time")
     private LocalDateTime dateTime;
 
+    @Column(name = "user_id") // ✅ New: links to User.id
+    private Long userId;
+
     @Column(name = "username")
     private String username;
 
@@ -46,40 +49,107 @@ public class Log {
     @Transient
     private List<Log> relatedLogs;
 
-    // Getters and Setters
-    public Long getId() { return id; }
-    public LocalDateTime getDateTime() { return dateTime; }
-    public void setDateTime(LocalDateTime dateTime) { this.dateTime = dateTime; }
+    // --- Getters and Setters ---
 
-    public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getAction() { return action; }
-    public void setAction(String action) { this.action = action; }
+    public LocalDateTime getDateTime() {
+        return dateTime;
+    }
 
-    public String getItem() { return item; }
-    public void setItem(String item) { this.item = item; }
+    public void setDateTime(LocalDateTime dateTime) {
+        this.dateTime = dateTime;
+    }
 
-    public String getWarehouse() { return warehouse; }
-    public void setWarehouse(String warehouse) { this.warehouse = warehouse; }
+    public Long getUserId() {
+        return userId;
+    }
 
-    public String getLocation() { return location; }
-    public void setLocation(String location) { this.location = location; }
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
 
-    public String getGroupId() { return groupId; }
-    public void setGroupId(String groupId) { this.groupId = groupId; }
+    public String getUsername() {
+        return username;
+    }
 
-    public Integer getUnits() { return units; }
-    public void setUnits(Integer units) { this.units = units; }
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
-    public Integer getRemainingUnits() { return remainingUnits; }
-    public void setRemainingUnits(Integer remainingUnits) { this.remainingUnits = remainingUnits; }
+    public String getAction() {
+        return action;
+    }
 
-    public String getPreviousLocation() { return previousLocation; }
-    public void setPreviousLocation(String previousLocation) { this.previousLocation = previousLocation; }
+    public void setAction(String action) {
+        this.action = action;
+    }
 
-    public List<Log> getRelatedLogs() { return relatedLogs; }
-    public void setRelatedLogs(List<Log> relatedLogs) { this.relatedLogs = relatedLogs; }
+    public String getItem() {
+        return item;
+    }
+
+    public void setItem(String item) {
+        this.item = item;
+    }
+
+    public String getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(String warehouse) {
+        this.warehouse = warehouse;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
+
+    public Integer getUnits() {
+        return units;
+    }
+
+    public void setUnits(Integer units) {
+        this.units = units;
+    }
+
+    public Integer getRemainingUnits() {
+        return remainingUnits;
+    }
+
+    public void setRemainingUnits(Integer remainingUnits) {
+        this.remainingUnits = remainingUnits;
+    }
+
+    public String getPreviousLocation() {
+        return previousLocation;
+    }
+
+    public void setPreviousLocation(String previousLocation) {
+        this.previousLocation = previousLocation;
+    }
+
+    public List<Log> getRelatedLogs() {
+        return relatedLogs;
+    }
+
+    public void setRelatedLogs(List<Log> relatedLogs) {
+        this.relatedLogs = relatedLogs;
+    }
 
     @PrePersist
     public void generateGroupIdIfRestocked() {

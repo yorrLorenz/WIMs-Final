@@ -22,10 +22,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.security.core.Authentication;
 
-
 @RestController
 @RequestMapping("/api/accounts")
-
 public class AccountApiController {
 
     @Autowired
@@ -38,13 +36,15 @@ public class AccountApiController {
     public ResponseEntity<User> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
         User user = userRepository.findByUsername(userDetails.getUsername())
             .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
         return ResponseEntity.ok(user);
     }
 
     @GetMapping("/my-logs")
     public ResponseEntity<List<DashboardLogDTO>> getCurrentUserLogs(@AuthenticationPrincipal UserDetails userDetails) {
-        List<Log> logs = logRepository.findByUsernameOrderByDateTimeDesc(userDetails.getUsername());
+        User user = userRepository.findByUsername(userDetails.getUsername())
+            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        List<Log> logs = logRepository.findByUserIdOrderByDateTimeDesc(user.getId());
 
         List<DashboardLogDTO> dtos = logs.stream()
             .map(log -> new DashboardLogDTO(
@@ -93,29 +93,26 @@ public class AccountApiController {
     }
 
     @GetMapping
-public List<User> getAllAccounts() {
-    return userRepository.findAll();
-}
-
-@DeleteMapping("/{id}")
-public ResponseEntity<?> deleteAccount(@PathVariable Long id) {
-    Optional<User> targetUser = userRepository.findById(id);
-    if (targetUser.isEmpty()) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found");
+    public List<User> getAllAccounts() {
+        return userRepository.findAll();
     }
 
-    // Prevent admin from deleting itself
-    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    String currentUsername = auth.getName();
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteAccount(@PathVariable Long id) {
+        Optional<User> targetUser = userRepository.findById(id);
+        if (targetUser.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found");
+        }
 
-    if (targetUser.get().getUsername().equals(currentUsername)) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN)
-            .body("You cannot delete your own account.");
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = auth.getName();
+
+        if (targetUser.get().getUsername().equals(currentUsername)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body("You cannot delete your own account.");
+        }
+
+        userRepository.deleteById(id);
+        return ResponseEntity.ok("Account deleted successfully");
     }
-
-    userRepository.deleteById(id);
-    return ResponseEntity.ok("Account deleted successfully");
-}
-
-
 }
