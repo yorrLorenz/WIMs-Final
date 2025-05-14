@@ -206,8 +206,134 @@ const WarehouseDashboard = () => {
           <div className="modal">
             <div className="modal-content">
               <h3>{getModalTitle()}</h3>
-              {/* Modal form code unchanged */}
-              {/* ... */}
+              <h3>{getModalTitle()}</h3>
+
+<label>Action:</label>
+<select
+  name="action"
+  value={formData.action}
+  onChange={(e) => setFormData({ ...formData, action: e.target.value })}
+>
+  <option value="Restocked">Restock</option>
+  <option value="Removed">Remove</option>
+  <option value="Move">Move</option>
+</select>
+
+{formData.action === "Restocked" && (
+  <>
+    <label>Item:</label>
+    <input
+      name="item"
+      value={formData.item}
+      onChange={(e) => setFormData({ ...formData, item: e.target.value })}
+    />
+    <label>Location:</label>
+    <input
+      name="location"
+      value={formData.location}
+      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+    />
+    <label>Units:</label>
+    <input
+      type="number"
+      name="units"
+      min="1"
+      value={formData.units}
+      onChange={(e) => setFormData({ ...formData, units: parseInt(e.target.value) || 1 })}
+    />
+  </>
+)}
+
+{(formData.action === "Removed" || formData.action === "Move") && (
+  <>
+    <label>Group ID:</label>
+    <input
+      name="groupId"
+      value={formData.groupId}
+      onChange={async (e) => {
+        const groupId = e.target.value.trim();
+        setFormData((prev) => ({ ...prev, groupId }));
+
+        if (!groupId) {
+          toast.error("Group ID cannot be empty");
+          return;
+        }
+
+        try {
+          const res = await fetch(`https://wims-w48m.onrender.com/api/logs/group/${groupId}`, {
+            method: "GET",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+          });
+
+          const result = await res.json();
+          const logs = Array.isArray(result) ? result : [result];
+
+          if (!res.ok || !logs.length) {
+            toast.error("Invalid Group ID");
+            return;
+          }
+
+          logs.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
+          const latestValid = logs.find((log) => log.action !== "Removed");
+
+          if (!latestValid) {
+            toast.error("All units already removed for this Group ID.");
+            return;
+          }
+
+          const maxUnits = latestValid.units || 1;
+
+          setFormData((prev) => ({
+            ...prev,
+            item: latestValid.item.split(" (")[0],
+            location: prev.action === "Removed" ? latestValid.location : "",
+            units: maxUnits,
+          }));
+        } catch (err) {
+          console.error("Error fetching logs:", err);
+          toast.error("Failed to fetch logs");
+        }
+      }}
+    />
+
+    <label>Item:</label>
+    <input name="item" value={formData.item} readOnly />
+
+    {formData.action === "Removed" && (
+      <>
+        <label>Units to Remove:</label>
+        <input
+          type="number"
+          name="units"
+          min="1"
+          value={formData.units}
+          onChange={(e) => setFormData({ ...formData, units: parseInt(e.target.value) || 1 })}
+        />
+      </>
+    )}
+
+    {formData.action === "Move" && (
+      <>
+        <label>New Location:</label>
+        <input
+          name="location"
+          value={formData.location}
+          onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+        />
+        <label>Units to Move:</label>
+        <input
+          type="number"
+          name="units"
+          min="1"
+          value={formData.units}
+          onChange={(e) => setFormData({ ...formData, units: parseInt(e.target.value) || 1 })}
+        />
+      </>
+    )}
+  </>
+)}
+
               <button onClick={handleSubmit}>Submit</button>
               <button onClick={() => setShowAddModal(false)}>Cancel</button>
             </div>
