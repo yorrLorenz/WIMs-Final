@@ -1,11 +1,13 @@
 package com.wims.controller;
 
+import com.wims.dto.DashboardLogDTO;
 import com.wims.model.Log;
 import com.wims.model.Product;
 import com.wims.model.Warehouse;
 import com.wims.repository.LogRepository;
 import com.wims.repository.ProductRepository;
 import com.wims.repository.WarehouseRepository;
+import com.wims.service.LogBroadcastService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +24,7 @@ public class ProductController {
     @Autowired private ProductRepository productRepository;
     @Autowired private LogRepository logRepository;
     @Autowired private WarehouseRepository warehouseRepository;
+    @Autowired private LogBroadcastService logBroadcastService; // ✅ added
 
     @PostMapping("/add")
     public ResponseEntity<?> addProduct(@RequestBody ProductRequest request) {
@@ -107,7 +110,6 @@ public class ProductController {
                 original.setCurrentLocation(newLocation);
                 productRepository.save(original);
             } else {
-                // split: keep bigger group with old ID
                 original.setUnits(original.getUnits() - moveUnits);
                 productRepository.save(original);
 
@@ -124,7 +126,6 @@ public class ProductController {
                 log.setItem(original.getItem() + " (Moved " + moveUnits + " units from " + oldLocation + " → " + newLocation + ", new Group ID: " + newGroupId + ")");
                 log.setGroupId(newGroupId);
 
-                // also log on original group
                 Log originalLog = new Log();
                 originalLog.setUsername(request.getUsername());
                 originalLog.setAction("Move");
@@ -136,10 +137,44 @@ public class ProductController {
                 originalLog.setDateTime(LocalDateTime.now());
                 originalLog.setPreviousLocation(oldLocation);
                 logRepository.save(originalLog);
+
+                // 🟢 also broadcast the original movement
+                DashboardLogDTO originalDto = new DashboardLogDTO(
+                    originalLog.getId(),
+                    originalLog.getDateTime(),
+                    originalLog.getUsername(),
+                    originalLog.getAction(),
+                    originalLog.getItem(),
+                    originalLog.getWarehouse(),
+                    originalLog.getLocation(),
+                    originalLog.getGroupId(),
+                    originalLog.getUnits(),
+                    originalLog.getRemainingUnits(),
+                    originalLog.getPreviousLocation()
+                );
+                logBroadcastService.broadcastLogUpdate(originalDto);
             }
         }
 
         logRepository.save(log);
+
+        // ✅ Broadcast log to WebSocket subscribers
+        DashboardLogDTO dto = new DashboardLogDTO(
+            log.getId(),
+            log.getDateTime(),
+            log.getUsername(),
+            log.getAction(),
+            log.getItem(),
+            log.getWarehouse(),
+            log.getLocation(),
+            log.getGroupId(),
+            log.getUnits(),
+            log.getRemainingUnits(),
+            log.getPreviousLocation()
+        );
+
+        logBroadcastService.broadcastLogUpdate(dto);
+
         return ResponseEntity.ok("Product logged");
     }
 
