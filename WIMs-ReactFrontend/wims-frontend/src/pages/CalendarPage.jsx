@@ -49,20 +49,34 @@ const CalendarPage = () => {
 
   const fetchLogs = () => {
     const formattedDate = format(selectedDate, "yyyy-MM-dd");
-    if (!isAdmin && !warehouse) return;
+
+    if (!isAdmin && (!warehouse || warehouse.trim() === "")) {
+      console.warn("Invalid or missing warehouse name");
+      return;
+    }
 
     const url = isAdmin
       ? `https://wims-w48m.onrender.com/api/accounts/dashboard-by-date?date=${formattedDate}`
-      : `https://wims-w48m.onrender.com/api/dashboard-by-date?date=${formattedDate}&warehouse=${encodeURIComponent(warehouse)}`;
+      : `https://wims-w48m.onrender.com/api/dashboard-by-date?date=${formattedDate}&warehouse=${encodeURIComponent(
+          warehouse
+        )}`;
 
     fetch(url, { credentials: "include" })
-      .then((res) => res.json())
+      .then(async (res) => {
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error("Failed to fetch logs: " + text);
+        }
+        return res.json();
+      })
       .then((data) => {
-        const sorted = (data.logs || []).sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
+        const sorted = (data.logs || []).sort(
+          (a, b) => new Date(b.dateTime) - new Date(a.dateTime)
+        );
         setLogs(sorted);
       })
       .catch((err) => {
-        console.error("Error loading logs", err);
+        console.error("Error loading logs:", err);
         setLogs([]);
       });
   };
@@ -91,9 +105,7 @@ const CalendarPage = () => {
     });
 
     stompClient.activate();
-    return () => {
-      stompClient.deactivate();
-    };
+    return () => stompClient.deactivate();
   }, [selectedDate, warehouse, isAdmin]);
 
   const toggleSort = (field) => {
@@ -130,7 +142,9 @@ const CalendarPage = () => {
     if (log.action === "Move") {
       return `Moved ${log.units} units from ${log.previousLocation ?? "?"} to ${log.location}`;
     } else if (log.action === "Removed") {
-      return `Removed ${log.units} units${log.remainingUnits != null ? `, ${log.remainingUnits} left` : ""}`;
+      return `Removed ${log.units} units${
+        log.remainingUnits != null ? `, ${log.remainingUnits} left` : ""
+      }`;
     } else {
       return `Restocked ${log.units} units at ${log.location}`;
     }
@@ -157,7 +171,9 @@ const CalendarPage = () => {
         {days.map((day) => (
           <div
             key={day}
-            className={`calendar-day ${isToday(day) ? "today" : ""} ${isSameDay(day, selectedDate) ? "selected" : ""}`}
+            className={`calendar-day ${isToday(day) ? "today" : ""} ${
+              isSameDay(day, selectedDate) ? "selected" : ""
+            }`}
             onClick={() => handleDayClick(day)}
           >
             {day.getDate()}
@@ -170,13 +186,23 @@ const CalendarPage = () => {
         <table>
           <thead>
             <tr>
-              <th onClick={() => toggleSort("dateTime")}>Time {renderSortIcon("dateTime")}</th>
-              <th onClick={() => toggleSort("username")}>User {renderSortIcon("username")}</th>
-              <th onClick={() => toggleSort("action")}>Action {renderSortIcon("action")}</th>
-              <th onClick={() => toggleSort("item")}>Item {renderSortIcon("item")}</th>
+              <th onClick={() => toggleSort("dateTime")}>
+                Time {renderSortIcon("dateTime")}
+              </th>
+              <th onClick={() => toggleSort("username")}>
+                User {renderSortIcon("username")}
+              </th>
+              <th onClick={() => toggleSort("action")}>
+                Action {renderSortIcon("action")}
+              </th>
+              <th onClick={() => toggleSort("item")}>
+                Item {renderSortIcon("item")}
+              </th>
               <th>Details</th>
               {isAdmin && (
-                <th onClick={() => toggleSort("warehouse")}>Warehouse {renderSortIcon("warehouse")}</th>
+                <th onClick={() => toggleSort("warehouse")}>
+                  Warehouse {renderSortIcon("warehouse")}
+                </th>
               )}
             </tr>
           </thead>
@@ -186,7 +212,9 @@ const CalendarPage = () => {
                 <tr key={log.id}>
                   <td>{new Date(log.dateTime).toLocaleTimeString()}</td>
                   <td>{log.username}</td>
-                  <td className={`action-cell ${log.action.toLowerCase()}`}>{log.action}</td>
+                  <td className={`action-cell ${log.action.toLowerCase()}`}>
+                    {log.action}
+                  </td>
                   <td>{log.item?.split(" (")[0]}</td>
                   <td>{renderLogDetails(log)}</td>
                   {isAdmin && <td>{log.warehouse}</td>}
