@@ -5,24 +5,17 @@ import "./AdminProductMasterlist.css";
 const AdminProductMasterlist = () => {
   const [products, setProducts] = useState([]);
   const [warehouses, setWarehouses] = useState([]);
-  const [activeWarehouses, setActiveWarehouses] = useState([]);
   const [selectedWarehouse, setSelectedWarehouse] = useState("All");
   const [expandedGroupId, setExpandedGroupId] = useState(null);
   const [logs, setLogs] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchResults, setSearchResults] = useState(null);
 
   useEffect(() => {
     fetch("https://wims-w48m.onrender.com/api/warehouses", {
       credentials: "include",
     })
       .then((res) => res.json())
-      .then((data) => {
-        const names = data.map((w) => w.name);
-        const active = data.filter((w) => w.active).map((w) => w.name);
-        setWarehouses(names);
-        setActiveWarehouses(active);
-      })
+      .then((data) => setWarehouses(data.map((w) => w.name)))
       .catch((err) => console.error("Failed to load warehouses", err));
   }, []);
 
@@ -36,12 +29,16 @@ const AdminProductMasterlist = () => {
       .then((res) => res.json())
       .then((data) => {
         const filtered = data.filter(
-          (p) => p.units > 0 && activeWarehouses.includes(p.warehouse)
+          (p) =>
+            p.units > 0 &&
+            warehouses.includes(p.warehouse) &&
+            (searchTerm.trim() === "" ||
+              p.item.toLowerCase().includes(searchTerm.trim().toLowerCase()))
         );
         setProducts(filtered);
       })
       .catch((err) => console.error("Failed to load products", err));
-  }, [selectedWarehouse, activeWarehouses]);
+  }, [selectedWarehouse, warehouses, searchTerm]);
 
   const toggleExpand = async (groupId) => {
     if (expandedGroupId === groupId) {
@@ -60,21 +57,6 @@ const AdminProductMasterlist = () => {
         }
       }
       setExpandedGroupId(groupId);
-    }
-  };
-
-  const handleSearch = async () => {
-    if (!searchTerm.trim()) return;
-    try {
-      const res = await fetch(
-        `https://wims-w48m.onrender.com/api/logs/group/${searchTerm.trim()}`,
-        { credentials: "include" }
-      );
-      const data = await res.json();
-      setSearchResults(data);
-      setExpandedGroupId(searchTerm.trim());
-    } catch (err) {
-      console.error("Search failed", err);
     }
   };
 
@@ -99,11 +81,11 @@ const AdminProductMasterlist = () => {
         <div className="search-container">
           <input
             type="text"
-            placeholder="Search Group ID..."
+            placeholder="Search Item Name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <button onClick={handleSearch}>
+          <button>
             <FaSearch />
           </button>
         </div>
@@ -121,48 +103,37 @@ const AdminProductMasterlist = () => {
           </tr>
         </thead>
         <tbody>
-          {searchResults ? (
-            <tr>
-              <td></td>
-              <td>{searchResults.groupId}</td>
-              <td>{searchResults.item}</td>
-              <td style={{ color: "green" }}>{searchResults.warehouse}</td>
-              <td>{searchResults.currentLocation}</td>
-              <td>{searchResults.units}</td>
-            </tr>
-          ) : (
-            products.map((p) => (
-              <React.Fragment key={p.groupId}>
+          {products.map((p) => (
+            <React.Fragment key={p.groupId}>
+              <tr>
+                <td>
+                  <button onClick={() => toggleExpand(p.groupId)}>
+                    <FaBars />
+                  </button>
+                </td>
+                <td>{p.groupId}</td>
+                <td>{p.item}</td>
+                <td style={{ color: "green" }}>{p.warehouse}</td>
+                <td>{p.currentLocation}</td>
+                <td>{p.units}</td>
+              </tr>
+              {expandedGroupId === p.groupId && logs[p.groupId] && (
                 <tr>
-                  <td>
-                    <button onClick={() => toggleExpand(p.groupId)}>
-                      <FaBars />
-                    </button>
+                  <td colSpan="6">
+                    <ul>
+                      {logs[p.groupId].map((log) => (
+                        <li key={log.id}>
+                          {log.action} {log.units} unit(s) on{" "}
+                          {new Date(log.dateTime).toLocaleString()} by{" "}
+                          {log.username}
+                        </li>
+                      ))}
+                    </ul>
                   </td>
-                  <td>{p.groupId}</td>
-                  <td>{p.item}</td>
-                  <td style={{ color: "green" }}>{p.warehouse}</td>
-                  <td>{p.currentLocation}</td>
-                  <td>{p.units}</td>
                 </tr>
-                {expandedGroupId === p.groupId && logs[p.groupId] && (
-                  <tr>
-                    <td colSpan="6">
-                      <ul>
-                        {logs[p.groupId].map((log) => (
-                          <li key={log.id}>
-                            {log.action} {log.units} unit(s) on{" "}
-                            {new Date(log.dateTime).toLocaleString()} by{" "}
-                            {log.username}
-                          </li>
-                        ))}
-                      </ul>
-                    </td>
-                  </tr>
-                )}
-              </React.Fragment>
-            ))
-          )}
+              )}
+            </React.Fragment>
+          ))}
         </tbody>
       </table>
     </div>
