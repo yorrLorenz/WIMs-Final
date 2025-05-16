@@ -128,7 +128,10 @@ const AdminProductMasterlist = () => {
             <th onClick={() => toggleSort("item")}>
               Item {sortField === "item" && (sortAsc ? <FaSortAlphaDown /> : <FaSortAlphaUp />)}
             </th>
-            <th>Warehouse</th>
+            <th onClick={() => toggleSort("warehouse")}>
+              Warehouse {sortField === "warehouse" && (sortAsc ? <FaSortAlphaDown /> : <FaSortAlphaUp />)}
+            </th>
+            
             <th onClick={() => toggleSort("currentLocation")}>
               Location {sortField === "currentLocation" && (sortAsc ? <FaSortAlphaDown /> : <FaSortAlphaUp />)}
             </th>
