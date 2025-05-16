@@ -74,7 +74,7 @@ const CreateAccountPage = () => {
     }
 
     try {
-      setIsLoading(true); // ✅ block button
+      setIsLoading(true); 
       const res = await fetch("https://wims-w48m.onrender.com/api/accounts/create", {
         method: "POST",
         credentials: "include",
