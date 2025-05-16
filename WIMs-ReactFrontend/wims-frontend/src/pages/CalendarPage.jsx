@@ -19,6 +19,8 @@ const CalendarPage = () => {
   const [logs, setLogs] = useState([]);
   const [warehouse, setWarehouse] = useState("");
   const [showAll, setShowAll] = useState(false);
+  const [sortField, setSortField] = useState("dateTime");
+  const [sortAsc, setSortAsc] = useState(false);
 
   const isAdmin = new URLSearchParams(window.location.search).get("admin") === "true";
 
@@ -45,7 +47,9 @@ const CalendarPage = () => {
 
     const url = isAdmin
       ? `https://wims-w48m.onrender.com/api/accounts/dashboard-by-date?date=${formattedDate}`
-      : `https://wims-w48m.onrender.com/api/dashboard-by-date?date=${formattedDate}&warehouse=${encodeURIComponent(warehouse)}`;
+      : `https://wims-w48m.onrender.com/api/dashboard-by-date?date=${formattedDate}&warehouse=${encodeURIComponent(
+          warehouse
+        )}`;
 
     fetch(url, { credentials: "include" })
       .then((res) => res.json())
@@ -63,7 +67,6 @@ const CalendarPage = () => {
     fetchLogs();
   }, [selectedDate, warehouse, isAdmin]);
 
-  
   useEffect(() => {
     const socket = new SockJS("https://wims-w48m.onrender.com/ws");
     const stompClient = new Client({
@@ -88,6 +91,36 @@ const CalendarPage = () => {
       stompClient.deactivate();
     };
   }, [selectedDate, warehouse, isAdmin]);
+
+  const toggleSort = (field) => {
+    if (sortField === field) {
+      setSortAsc(!sortAsc);
+    } else {
+      setSortField(field);
+      setSortAsc(true);
+    }
+  };
+
+  const getSortedLogs = () => {
+    const sorted = [...logs].sort((a, b) => {
+      let valA = a[sortField];
+      let valB = b[sortField];
+
+      if (sortField === "dateTime") {
+        valA = new Date(valA);
+        valB = new Date(valB);
+      } else {
+        valA = (valA || "").toString().toLowerCase();
+        valB = (valB || "").toString().toLowerCase();
+      }
+
+      if (valA < valB) return sortAsc ? -1 : 1;
+      if (valA > valB) return sortAsc ? 1 : -1;
+      return 0;
+    });
+
+    return showAll ? sorted : sorted.slice(0, 10);
+  };
 
   const renderLogDetails = (log) => {
     if (log.action === "Move") {
@@ -133,17 +166,17 @@ const CalendarPage = () => {
         <table>
           <thead>
             <tr>
-              <th>Time</th>
-              <th>User</th>
-              <th>Action</th>
-              <th>Item</th>
+              <th onClick={() => toggleSort("dateTime")}>Time</th>
+              <th onClick={() => toggleSort("username")}>User</th>
+              <th onClick={() => toggleSort("action")}>Action</th>
+              <th onClick={() => toggleSort("item")}>Item</th>
               <th>Details</th>
-              {isAdmin && <th>Warehouse</th>}
+              {isAdmin && <th onClick={() => toggleSort("warehouse")}>Warehouse</th>}
             </tr>
           </thead>
           <tbody>
-            {(showAll ? logs : logs.slice(0, 10)).length > 0 ? (
-              (showAll ? logs : logs.slice(0, 10)).map((log) => (
+            {getSortedLogs().length > 0 ? (
+              getSortedLogs().map((log) => (
                 <tr key={log.id}>
                   <td>{new Date(log.dateTime).toLocaleTimeString()}</td>
                   <td>{log.username}</td>

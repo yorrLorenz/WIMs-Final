@@ -13,16 +13,8 @@ const WarehouseDashboard = () => {
   const [expanded, setExpanded] = useState({});
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showAll, setShowAll] = useState(false);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false); 
-
-  const [formData, setFormData] = useState({
-    action: "Restocked",
-    item: "",
-    location: "",
-    groupId: "",
-    units: 1,
-  });
+  const [sortField, setSortField] = useState("dateTime");
+  const [sortAsc, setSortAsc] = useState(false);
 
   useEffect(() => {
     fetchLogs();
@@ -74,58 +66,37 @@ const WarehouseDashboard = () => {
     setExpanded((prev) => ({ ...prev, [logId]: !prev[logId] }));
   };
 
-  const getModalTitle = () => {
-    switch (formData.action) {
-      case "Restocked": return "Add Product";
-      case "Removed": return "Remove Product";
-      case "Move": return "Move Product";
-      default: return "Transaction";
+  const toggleSort = (field) => {
+    if (sortField === field) {
+      setSortAsc(!sortAsc);
+    } else {
+      setSortField(field);
+      setSortAsc(true);
     }
   };
 
-  const validateForm = () => {
-    if (formData.action === "Restocked")
-      return formData.item && formData.location && formData.units > 0;
-    if (formData.action === "Removed")
-      return formData.groupId && formData.units > 0;
-    if (formData.action === "Move")
-      return formData.groupId && formData.location && formData.units > 0;
-    return true;
-  };
+  const getSortedLogs = () => {
+    const sorted = [...logs].sort((a, b) => {
+      let valA = a[sortField];
+      let valB = b[sortField];
 
-  const handleSubmit = async () => {
-    if (isSubmitting) return;
-    if (!validateForm()) {
-      toast.error("Please complete all required fields.");
-      return;
-    }
-
-    setIsSubmitting(true); 
-
-    try {
-      const username = localStorage.getItem("username");
-      const payload = { ...formData, warehouse: warehouseId, username };
-
-      const res = await fetch("https://wims-w48m.onrender.com/api/products/add", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (res.ok) {
-        setShowAddModal(false);
-        setFormData({ action: "Restocked", item: "", location: "", groupId: "", units: 1 });
-        toast.success("Transaction added!");
+      if (sortField === "dateTime") {
+        valA = new Date(valA);
+        valB = new Date(valB);
+      } else if (sortField === "units") {
+        valA = parseFloat(valA ?? 0);
+        valB = parseFloat(valB ?? 0);
       } else {
-        const text = await res.text();
-        toast.error("Failed to add: " + text);
+        valA = (valA || "").toString().toLowerCase();
+        valB = (valB || "").toString().toLowerCase();
       }
-    } catch {
-      toast.error("Network error.");
-    } finally {
-      setIsSubmitting(false); 
-    }
+
+      if (valA < valB) return sortAsc ? -1 : 1;
+      if (valA > valB) return sortAsc ? 1 : -1;
+      return 0;
+    });
+
+    return showAll ? sorted : sorted.slice(0, 10);
   };
 
   return (
@@ -136,7 +107,6 @@ const WarehouseDashboard = () => {
           <div className="center">
             {currentTime.toLocaleDateString()} • {currentTime.toLocaleTimeString()}
           </div>
-          <button className="add-product-btn" onClick={() => setShowAddModal(true)}>+</button>
         </div>
 
         <div className="content">
@@ -145,19 +115,23 @@ const WarehouseDashboard = () => {
             <thead>
               <tr>
                 <th></th>
-                <th>Date</th>
-                <th>User</th>
+                <th onClick={() => toggleSort("dateTime")}>Date</th>
+                <th onClick={() => toggleSort("username")}>User</th>
                 <th>Action</th>
-                <th>Item</th>
-                <th>Location</th>
-                <th>Units</th>
+                <th onClick={() => toggleSort("item")}>Item</th>
+                <th onClick={() => toggleSort("location")}>Location</th>
+                <th onClick={() => toggleSort("units")}>Units</th>
               </tr>
             </thead>
             <tbody>
-              {(showAll ? logs : logs.slice(0, 10)).map((log) => (
+              {getSortedLogs().map((log) => (
                 <React.Fragment key={log.id}>
                   <tr>
-                    <td>{log.groupId && <button className="toggle-btn" onClick={() => toggleExpand(log.id)}>☰</button>}</td>
+                    <td>
+                      {log.groupId && (
+                        <button className="toggle-btn" onClick={() => toggleExpand(log.id)}>☰</button>
+                      )}
+                    </td>
                     <td>{new Date(log.dateTime).toLocaleString()}</td>
                     <td>{log.username}</td>
                     <td className={`action-cell ${log.action.toLowerCase()}`}>{log.action}</td>
@@ -203,117 +177,6 @@ const WarehouseDashboard = () => {
             </div>
           )}
         </div>
-
-        {showAddModal && (
-          <div className="modal">
-            <div className="modal-content">
-              <h3>{getModalTitle()}</h3>
-
-              <label>Action:</label>
-              <select
-                name="action"
-                value={formData.action}
-                onChange={(e) => setFormData({ ...formData, action: e.target.value })}
-              >
-                <option value="Restocked">Restock</option>
-                <option value="Removed">Remove</option>
-                <option value="Move">Move</option>
-              </select>
-
-              {formData.action === "Restocked" && (
-                <>
-                  <label>Item:</label>
-                  <input name="item" value={formData.item} onChange={(e) => setFormData({ ...formData, item: e.target.value })} />
-                  <label>Location:</label>
-                  <input name="location" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
-                  <label>Units:</label>
-                  <input type="number" name="units" min="1" value={formData.units} onChange={(e) => setFormData({ ...formData, units: parseInt(e.target.value) || 1 })} />
-                </>
-              )}
-
-              {(formData.action === "Removed" || formData.action === "Move") && (
-                <>
-                  <label>Group ID:</label>
-                  <input
-                    name="groupId"
-                    value={formData.groupId}
-                    onChange={async (e) => {
-                      const groupId = e.target.value.trim();
-                      setFormData((prev) => ({ ...prev, groupId }));
-
-                      if (!groupId) {
-                        toast.error("Group ID cannot be empty");
-                        return;
-                      }
-
-                      try {
-                        const res = await fetch(`https://wims-w48m.onrender.com/api/logs/group/${groupId}`, {
-                          method: "GET",
-                          credentials: "include",
-                          headers: { "Content-Type": "application/json" },
-                        });
-
-                        const result = await res.json();
-                        const logs = Array.isArray(result) ? result : [result];
-
-                        if (!res.ok || !logs.length) {
-                          toast.error("Invalid Group ID");
-                          return;
-                        }
-
-                        logs.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
-                        const latestValid = logs.find((log) => log.action !== "Removed");
-
-                        if (!latestValid) {
-                          toast.error("All units already removed for this Group ID.");
-                          return;
-                        }
-
-                        const maxUnits = latestValid.units || 1;
-
-                        setFormData((prev) => ({
-                          ...prev,
-                          item: latestValid.item.split(" (")[0],
-                          location: prev.action === "Removed" ? latestValid.location : "",
-                          units: maxUnits,
-                        }));
-                      } catch (err) {
-                        console.error("Error fetching logs:", err);
-                        toast.error("Failed to fetch logs");
-                      }
-                    }}
-                  />
-
-                  <label>Item:</label>
-                  <input name="item" value={formData.item} readOnly />
-
-                  {formData.action === "Removed" && (
-                    <>
-                      <label>Units to Remove:</label>
-                      <input type="number" name="units" min="1" value={formData.units} onChange={(e) => setFormData({ ...formData, units: parseInt(e.target.value) || 1 })} />
-                    </>
-                  )}
-
-                  {formData.action === "Move" && (
-                    <>
-                      <label>New Location:</label>
-                      <input name="location" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
-                      <label>Units to Move:</label>
-                      <input type="number" name="units" min="1" value={formData.units} onChange={(e) => setFormData({ ...formData, units: parseInt(e.target.value) || 1 })} />
-                    </>
-                  )}
-                </>
-              )}
-
-              <button onClick={handleSubmit} disabled={isSubmitting}>
-                {isSubmitting ? "Submitting..." : "Submit"}
-              </button>
-              <button onClick={() => setShowAddModal(false)} disabled={isSubmitting}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
 
         <ToastContainer position="bottom-right" autoClose={3000} />
       </div>

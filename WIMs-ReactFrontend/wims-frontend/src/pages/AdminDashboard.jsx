@@ -12,6 +12,9 @@ const AdminDashboard = () => {
   const [expanded, setExpanded] = useState({});
   const [showAll, setShowAll] = useState(false);
 
+  const [sortField, setSortField] = useState("dateTime");
+  const [sortAsc, setSortAsc] = useState(false);
+
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchMode, setSearchMode] = useState("group");
   const [groupId, setGroupId] = useState("");
@@ -19,7 +22,6 @@ const AdminDashboard = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [searchError, setSearchError] = useState("");
 
-  
   useEffect(() => {
     fetch("https://wims-w48m.onrender.com/api/admin/logs", {
       method: "GET",
@@ -30,7 +32,6 @@ const AdminDashboard = () => {
       .catch((err) => console.error("Failed to load admin logs", err));
   }, []);
 
-  
   useEffect(() => {
     const socket = new SockJS("https://wims-w48m.onrender.com/ws");
     const stompClient = new Client({
@@ -58,6 +59,39 @@ const AdminDashboard = () => {
 
   const formatDate = (dateTimeStr) => new Date(dateTimeStr).toLocaleString();
 
+  const toggleSort = (field) => {
+    if (sortField === field) {
+      setSortAsc(!sortAsc);
+    } else {
+      setSortField(field);
+      setSortAsc(true);
+    }
+  };
+
+  const getSortedLogs = () => {
+    const sorted = [...logs].sort((a, b) => {
+      let valA = a[sortField];
+      let valB = b[sortField];
+
+      if (sortField === "dateTime") {
+        valA = new Date(valA);
+        valB = new Date(valB);
+      } else if (sortField === "units") {
+        valA = parseFloat(valA ?? 0);
+        valB = parseFloat(valB ?? 0);
+      } else {
+        valA = (valA || "").toString().toLowerCase();
+        valB = (valB || "").toString().toLowerCase();
+      }
+
+      if (valA < valB) return sortAsc ? -1 : 1;
+      if (valA > valB) return sortAsc ? 1 : -1;
+      return 0;
+    });
+
+    return showAll ? sorted : sorted.slice(0, 10);
+  };
+
   const handleSearch = async () => {
     setSearchError("");
     try {
@@ -75,9 +109,7 @@ const AdminDashboard = () => {
 
       setSearchResults(logsArray);
     } catch (err) {
-      setSearchError(
-        "No logs found for this " + (searchMode === "group" ? "Group ID." : "User ID.")
-      );
+      setSearchError("No logs found for this " + (searchMode === "group" ? "Group ID." : "User ID."));
       setSearchResults([]);
     }
   };
@@ -103,17 +135,17 @@ const AdminDashboard = () => {
             <thead>
               <tr>
                 <th></th>
-                <th>Date</th>
-                <th>User</th>
+                <th onClick={() => toggleSort("dateTime")}>Date</th>
+                <th onClick={() => toggleSort("username")}>User</th>
                 <th>Action</th>
-                <th>Item</th>
+                <th onClick={() => toggleSort("item")}>Item</th>
                 <th>Warehouse</th>
-                <th>Location</th>
-                <th>Units</th>
+                <th onClick={() => toggleSort("location")}>Location</th>
+                <th onClick={() => toggleSort("units")}>Units</th>
               </tr>
             </thead>
             <tbody>
-              {(showAll ? logs : logs.slice(0, 10)).map((log) => (
+              {getSortedLogs().map((log) => (
                 <React.Fragment key={log.id}>
                   <tr>
                     <td style={{ textAlign: "center" }}>
@@ -175,48 +207,47 @@ const AdminDashboard = () => {
             <div className="modal-content">
               <h3>Search Logs</h3>
 
-<label htmlFor="searchType">Search by:</label>
-<select
-  id="searchType"
-  value={searchMode}
-  onChange={(e) => setSearchMode(e.target.value)}
-  style={{
-    marginBottom: "1rem",
-    padding: "0.5rem",
-    border: "1px solid #ccc",
-    borderRadius: "6px",
-    width: "100%",
-  }}
->
-  <option value="group">Group ID</option>
-  <option value="user">User ID</option>
-</select>
+              <label htmlFor="searchType">Search by:</label>
+              <select
+                id="searchType"
+                value={searchMode}
+                onChange={(e) => setSearchMode(e.target.value)}
+                style={{
+                  marginBottom: "1rem",
+                  padding: "0.5rem",
+                  border: "1px solid #ccc",
+                  borderRadius: "6px",
+                  width: "100%",
+                }}
+              >
+                <option value="group">Group ID</option>
+                <option value="user">User ID</option>
+              </select>
 
-<input
-  type={searchMode === "group" ? "text" : "number"}
-  placeholder={`Enter ${searchMode === "group" ? "Group ID" : "User ID"}`}
-  value={searchMode === "group" ? groupId : userId}
-  onChange={(e) =>
-    searchMode === "group" ? setGroupId(e.target.value) : setUserId(e.target.value)
-  }
-  style={{
-    marginBottom: "1rem",
-    padding: "0.5rem",
-    border: "1px solid #ccc",
-    borderRadius: "6px",
-    width: "100%",
-  }}
-/>
+              <input
+                type={searchMode === "group" ? "text" : "number"}
+                placeholder={`Enter ${searchMode === "group" ? "Group ID" : "User ID"}`}
+                value={searchMode === "group" ? groupId : userId}
+                onChange={(e) =>
+                  searchMode === "group" ? setGroupId(e.target.value) : setUserId(e.target.value)
+                }
+                style={{
+                  marginBottom: "1rem",
+                  padding: "0.5rem",
+                  border: "1px solid #ccc",
+                  borderRadius: "6px",
+                  width: "100%",
+                }}
+              />
 
-<button onClick={handleSearch} className="brown-btn" style={{ marginBottom: "0.5rem" }}>
-  Search
-</button>
-<button className="close-btn" onClick={() => setShowSearchModal(false)}>
-  Close
-</button>
+              <button onClick={handleSearch} className="brown-btn" style={{ marginBottom: "0.5rem" }}>
+                Search
+              </button>
+              <button className="close-btn" onClick={() => setShowSearchModal(false)}>
+                Close
+              </button>
 
-{searchError && <p className="error-text">{searchError}</p>}
-
+              {searchError && <p className="error-text">{searchError}</p>}
 
               {searchResults.length > 0 && (
                 <div className="search-results">

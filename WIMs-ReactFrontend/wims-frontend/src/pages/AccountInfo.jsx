@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FaUserCircle, FaRegCopy } from "react-icons/fa";
+import { FaUserCircle, FaRegCopy, FaSortAlphaDown, FaSortAlphaUp } from "react-icons/fa";
 import { toast } from "react-toastify";
 import "./AccountInfo.css";
 
@@ -7,6 +7,8 @@ const AccountInfo = () => {
   const [user, setUser] = useState(null);
   const [logs, setLogs] = useState([]);
   const [showAll, setShowAll] = useState(false);
+  const [sortField, setSortField] = useState("dateTime");
+  const [sortAsc, setSortAsc] = useState(false);
 
   useEffect(() => {
     fetch("https://wims-w48m.onrender.com/api/accounts/me", {
@@ -39,6 +41,36 @@ const AccountInfo = () => {
     } else {
       return `Restocked ${log.units} units at ${log.location}`;
     }
+  };
+
+  const toggleSort = (field) => {
+    if (sortField === field) {
+      setSortAsc(!sortAsc);
+    } else {
+      setSortField(field);
+      setSortAsc(true);
+    }
+  };
+
+  const getSortedLogs = () => {
+    const sorted = [...logs].sort((a, b) => {
+      let valA = a[sortField];
+      let valB = b[sortField];
+
+      if (sortField === "dateTime") {
+        valA = new Date(valA);
+        valB = new Date(valB);
+      } else {
+        valA = (valA || "").toString().toLowerCase();
+        valB = (valB || "").toString().toLowerCase();
+      }
+
+      if (valA < valB) return sortAsc ? -1 : 1;
+      if (valA > valB) return sortAsc ? 1 : -1;
+      return 0;
+    });
+
+    return showAll ? sorted : sorted.slice(0, 10);
   };
 
   if (!user) return <div>Loading...</div>;
@@ -80,16 +112,24 @@ const AccountInfo = () => {
         <table className="account-table">
           <thead>
             <tr>
-              <th>Date</th>
-              <th>Action</th>
-              <th>Item</th>
-              <th>Warehouse</th>
+              <th onClick={() => toggleSort("dateTime")}>
+                Date {sortField === "dateTime" && (sortAsc ? <FaSortAlphaDown /> : <FaSortAlphaUp />)}
+              </th>
+              <th onClick={() => toggleSort("action")}>
+                Action {sortField === "action" && (sortAsc ? <FaSortAlphaDown /> : <FaSortAlphaUp />)}
+              </th>
+              <th onClick={() => toggleSort("item")}>
+                Item {sortField === "item" && (sortAsc ? <FaSortAlphaDown /> : <FaSortAlphaUp />)}
+              </th>
+              <th onClick={() => toggleSort("warehouse")}>
+                Warehouse {sortField === "warehouse" && (sortAsc ? <FaSortAlphaDown /> : <FaSortAlphaUp />)}
+              </th>
               <th>Details</th>
             </tr>
           </thead>
           <tbody>
-            {(showAll ? logs : logs.slice(0, 10)).length > 0 ? (
-              (showAll ? logs : logs.slice(0, 10)).map((log, index) => (
+            {getSortedLogs().length > 0 ? (
+              getSortedLogs().map((log, index) => (
                 <tr key={index}>
                   <td>{new Date(log.dateTime).toLocaleString()}</td>
                   <td className={log.action.toLowerCase()}>{log.action}</td>
