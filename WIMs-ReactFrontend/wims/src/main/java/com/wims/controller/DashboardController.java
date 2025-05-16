@@ -30,7 +30,6 @@ public class DashboardController {
         this.logRepository = logRepository;
     }
 
-    // 📌 Warehouse dashboard with grouped related logs
     @GetMapping("/warehouse/{warehouseId}")
 public String warehouseDashboard(@PathVariable String warehouseId, Model model) {
     Optional<Warehouse> warehouseOpt = warehouseRepository.findByName(URLDecoder.decode(warehouseId, StandardCharsets.UTF_8));
@@ -52,7 +51,7 @@ public String warehouseDashboard(@PathVariable String warehouseId, Model model) 
 
     
 
-    // 📌 Show Add Product Form
+   
     @GetMapping("/warehouse/{warehouseId}/products/add")
     public String showAddProductForm(@PathVariable String warehouseId, Model model, Principal principal) {
         String decodedName = URLDecoder.decode(warehouseId, StandardCharsets.UTF_8);
@@ -69,7 +68,7 @@ public String warehouseDashboard(@PathVariable String warehouseId, Model model) 
         return "add-product";
     }
 
-    // 📌 Handle Product Submission
+   
     @PostMapping("/warehouse/{warehouseId}/products/add")
     public String handleAddProduct(@PathVariable String warehouseId,
                                    @ModelAttribute LogForm logForm,
@@ -90,14 +89,14 @@ public String warehouseDashboard(@PathVariable String warehouseId, Model model) 
         log.setItem(logForm.getItem());
         log.setWarehouse(warehouse.getName());
         log.setLocation(logForm.getWarehouseLocation());
-        log.setGroupId(logForm.getGroupId()); // Optional: group for expandable logs
+        log.setGroupId(logForm.getGroupId()); 
 
         logRepository.save(log);
 
         return "redirect:/warehouse/" + URLEncoder.encode(decodedName, StandardCharsets.UTF_8);
     }
 
-    // 📌 Admin-only dashboard (global view)
+  
     @GetMapping("/admin/dashboard")
     public String adminDashboard(Model model) {
         List<Log> allLogs = logRepository.findAllByOrderByDateTimeDesc();

@@ -1,4 +1,4 @@
-// src/components/LoadingButton.jsx
+
 import React from "react";
 
 const LoadingButton = ({ isLoading, onClick, children, ...props }) => {

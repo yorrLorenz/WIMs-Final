@@ -1,4 +1,4 @@
-/* Layout container */
+
 .layout {
   display: flex;
 }
@@ -17,7 +17,7 @@
   flex-grow: 1;
 }
 
-/* Top bar */
+
 .top-bar {
   background: #432e1b;
   color: white;
@@ -45,7 +45,7 @@
   align-items: center;
 }
 
-/* Action buttons */
+
 .add-product-btn {
   background-color: #00b894;
   color: white;
@@ -63,7 +63,7 @@
   opacity: 0.9;
 }
 
-/* Table */
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -85,7 +85,6 @@ table thead th {
   color: white !important;
 }
 
-/* Expandable logs */
 .related-logs {
   background: #e3f2fd;
   padding: 1rem;
@@ -93,7 +92,7 @@ table thead th {
   border-radius: 5px;
 }
 
-/* Icon buttons */
+
 .edit-btn,
 .expand-btn {
   background: transparent;
@@ -107,7 +106,7 @@ table thead th {
   color: #007bff;
 }
 
-/* Modal backdrop */
+
 .modal {
   position: fixed;
   top: 0;
@@ -121,7 +120,7 @@ table thead th {
   z-index: 999;
 }
 
-/* Modal content */
+
 .modal-content {
   background-color: #dbcbae;
   padding: 2rem;
@@ -170,42 +169,42 @@ table thead th {
   background-color: #2f1e10;
 }
 
-/* Table column widths */
+
 th:nth-child(1),
 td:nth-child(1) {
-  width: 15px; /* Expand icon */
+  width: 15px; 
 }
 
 th:nth-child(2),
 td:nth-child(2) {
-  width: 130px; /* Date */
+  width: 130px; 
 }
 
 th:nth-child(3),
 td:nth-child(3) {
-  width: 150px; /* User */
+  width: 150px; 
 }
 
 th:nth-child(4),
 td:nth-child(4) {
-  width: 80px; /* Action */
+  width: 80px; 
 }
 
 th:nth-child(5),
 td:nth-child(5) {
-  width: 400px; /* Item */
+  width: 400px; 
 }
 
 th:nth-child(6),
 td:nth-child(6) {
-  width: 315px; /* Location */
+  width: 315px; 
 }
 th:nth-child(7),
 td:nth-child(7) {
-  width: 70px; /* units */
+  width: 70px; 
 }
 
-/* Action highlight colors */
+
 .action-cell {
   font-weight: bold;
   text-transform: capitalize;

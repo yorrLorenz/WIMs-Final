@@ -16,7 +16,7 @@ public class Product {
     private boolean active = true;
     private int units;
 
-    // Getters and setters
+   
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

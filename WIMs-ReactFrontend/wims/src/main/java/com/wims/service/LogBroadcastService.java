@@ -1,4 +1,4 @@
-// com.wims.service.LogBroadcastService.java
+
 package com.wims.service;
 
 import com.wims.dto.DashboardLogDTO;
@@ -14,8 +14,8 @@ public class LogBroadcastService {
 
     public void broadcastLogUpdate(DashboardLogDTO log) {
         if (log.getWarehouse() != null && !log.getWarehouse().isBlank()) {
-            messagingTemplate.convertAndSend("/topic/logs/" + log.getWarehouse(), log); // for clerk
-            messagingTemplate.convertAndSend("/topic/logs/admin", log); // for admin
+            messagingTemplate.convertAndSend("/topic/logs/" + log.getWarehouse(), log); 
+            messagingTemplate.convertAndSend("/topic/logs/admin", log); 
 
         }
     }

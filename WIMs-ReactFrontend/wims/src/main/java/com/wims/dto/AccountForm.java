@@ -4,10 +4,10 @@ import com.wims.dto.AccountForm;
 public class AccountForm {
     private String username;
     private String password;
-    private String role;       // "ADMIN" or "CLERK"
-    private String warehouse;  // Only used if role is "CLERK"
+    private String role;       
+    private String warehouse;  
 
-    // --- Getters and Setters ---
+   
 
     public String getUsername() {
         return username;

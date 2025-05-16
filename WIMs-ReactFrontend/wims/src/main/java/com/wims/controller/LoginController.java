@@ -37,7 +37,6 @@ public class LoginController {
                 )
             );
 
-            // ✅ Set SecurityContext explicitly in session
             SecurityContext context = SecurityContextHolder.getContext();
             context.setAuthentication(auth);
             request.getSession(true).setAttribute("SPRING_SECURITY_CONTEXT", context);

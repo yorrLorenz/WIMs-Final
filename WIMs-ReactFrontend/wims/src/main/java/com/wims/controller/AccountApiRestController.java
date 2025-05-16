@@ -52,7 +52,7 @@ public class AccountApiRestController {
         newUser.setWarehouse(form.getRole().equals("CLERK") ? form.getWarehouse() : "Global");
 
         if (imageFile != null && !imageFile.isEmpty()) {
-            // ✅ Check MIME type
+          
             String contentType = imageFile.getContentType();
             if (contentType == null || !contentType.startsWith("image/")) {
                 return ResponseEntity.badRequest().body("Only image files are allowed");

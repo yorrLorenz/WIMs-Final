@@ -8,7 +8,7 @@ const MyLogs = () => {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" }
-      // No body needed unless backend expects something
+      
     })
       .then((res) => res.json())
       .then((data) => {

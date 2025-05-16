@@ -27,7 +27,7 @@
 .sidebar-bottom {
   width: 100%;
   text-align: center;
-  margin-bottom: 2rem; /* ✅ Add spacing above bottom edge */
+  margin-bottom: 2rem; 
 }
 
 .sidebar-icon {
@@ -58,7 +58,7 @@
   text-align: center;
   white-space: normal;
   word-wrap: break-word;
-  max-width: 60px; /* ✅ prevents wide overflow */
+  max-width: 60px; 
   line-height: 1rem;
   font-weight: bold;
 }

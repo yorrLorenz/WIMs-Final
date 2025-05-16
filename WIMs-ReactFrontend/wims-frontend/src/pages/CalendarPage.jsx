@@ -63,7 +63,7 @@ const CalendarPage = () => {
     fetchLogs();
   }, [selectedDate, warehouse, isAdmin]);
 
-  // 🧠 WebSocket real-time updates
+  
   useEffect(() => {
     const socket = new SockJS("https://wims-w48m.onrender.com/ws");
     const stompClient = new Client({

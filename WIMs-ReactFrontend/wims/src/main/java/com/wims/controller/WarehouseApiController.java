@@ -56,7 +56,7 @@ public ResponseEntity<?> createWarehouse(@RequestBody Warehouse warehouse) {
     }
 
     warehouse.setName(warehouse.getName().trim());
-    warehouse.setCode(generateNextWarehouseCode()); // ✅ FIX: assign 2-letter code
+    warehouse.setCode(generateNextWarehouseCode()); 
     warehouseRepository.save(warehouse);
 
     return ResponseEntity.ok("Warehouse created");

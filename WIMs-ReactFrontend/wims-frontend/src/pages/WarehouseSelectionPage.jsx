@@ -7,7 +7,7 @@ import "./WarehouseSelectionPage.css";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-// Fix Leaflet marker icon bug
+
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
@@ -23,7 +23,7 @@ const WarehouseSelectionPage = () => {
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [selectedWarehouse, setSelectedWarehouse] = useState(null);
   const [confirmStep, setConfirmStep] = useState(0);
-  const [deleting, setDeleting] = useState(false); // ✅ new
+  const [deleting, setDeleting] = useState(false); 
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
@@ -153,7 +153,7 @@ const WarehouseSelectionPage = () => {
         <button onClick={handleCreateWarehouse}>Create Warehouse</button>
         <button onClick={handleCreateAccount}>Create Account</button>
         <button onClick={openManageModal}>Manage</button>
-        <button onClick={handleLogout}>Logout</button>
+  
       </div>
 
       {showModal && (

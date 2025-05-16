@@ -51,46 +51,46 @@
   color: white;
 }
 
-/* Table column widths */
+
 th:nth-child(1),
 td:nth-child(1) {
-  width: 15px; /* Expand icon */
+  width: 15px; 
 }
 
 th:nth-child(2),
 td:nth-child(2) {
-  width: 110px; /* Date */
+  width: 110px;
 }
 
 th:nth-child(3),
 td:nth-child(3) {
-  width: 190px; /* User */
+  width: 190px; 
 }
 
 th:nth-child(4),
 td:nth-child(4) {
-  width: 50px; /* Action */
+  width: 50px; 
 }
 
 th:nth-child(5),
 td:nth-child(5) {
-  width: 300px; /* Item */
+  width: 300px; 
 }
 
 th:nth-child(6),
 td:nth-child(6) {
-  width: 215px; /* Location */
+  width: 215px; 
 }
 th:nth-child(7),
 td:nth-child(7) {
-  width: 90px; /* units */
+  width: 90px; 
 }
 th:nth-child(8),
 td:nth-child(8) {
-  width: 40px; /* units */
+  width: 40px; 
 }
 
-/* Action colors */
+
 .dashboard-table td.restocked {
   color: #2ecc71;
   font-weight: bold;
@@ -107,7 +107,7 @@ td:nth-child(8) {
   text-transform: capitalize;
 }
 
-/* Toggle button  tsadsa*/
+
 .toggle-btn {
   background: none;
   border: none;

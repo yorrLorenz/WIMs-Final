@@ -17,7 +17,7 @@ const CreateAccountPage = () => {
   const [imageFile, setImageFile] = useState(null);
   const [useWebcam, setUseWebcam] = useState(false);
   const [captured, setCaptured] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); // ✅ New loading state
+  const [isLoading, setIsLoading] = useState(false); 
   const webcamRef = useRef(null);
 
   useEffect(() => {
@@ -92,7 +92,7 @@ const CreateAccountPage = () => {
       console.error("Failed to create account:", err);
       toast.error("Network error. Please try again.");
     } finally {
-      setIsLoading(false); // ✅ re-enable
+      setIsLoading(false); 
     }
   };
 
@@ -180,5 +180,5 @@ const CreateAccountPage = () => {
     </div>
   );
 };
-//test
+
 export default CreateAccountPage;

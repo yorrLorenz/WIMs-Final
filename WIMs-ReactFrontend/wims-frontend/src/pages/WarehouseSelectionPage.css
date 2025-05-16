@@ -4,7 +4,7 @@
   height: 95vh;
   box-sizing: border-box;
   padding: 1.5rem 2rem;
-  overflow: hidden; /* prevent scrollbar */
+  overflow: hidden; 
   display: flex;
   flex-direction: column;
 }
@@ -59,7 +59,7 @@
 .button-group button:hover {
   background-color: #7e532d;
 }
-/* Modal backdrop */
+
 .modal-backdrop {
   position: fixed;
   top: 0;
@@ -73,7 +73,7 @@
   z-index: 999;
 }
 
-/* Modal content */
+
 .modal {
   background-color: #dbcbae;
   padding: 2rem;

@@ -13,7 +13,7 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
-/* Profile header section */
+
 .account-header {
   display: flex;
   align-items: center;
@@ -57,7 +57,7 @@
   margin: 2rem 0 1.5rem;
 }
 
-/* Section Title */
+
 .section-title {
   font-size: 1.4rem;
   font-weight: bold;
@@ -71,7 +71,7 @@
   margin-bottom: 1.5rem;
 }
 
-/* Log Table */
+
 .account-table {
   width: 100%;
   border-collapse: collapse;
@@ -86,40 +86,39 @@
   text-align: left;
 }
 
-/* Table header */
 .account-table thead th {
   background-color: #a77d55;
   color: black;
 }
 
-/* Adjusted column widths */
+
 .account-table th:nth-child(1),
 .account-table td:nth-child(1) {
-  width: 180px; /* Date */
+  width: 180px; 
   white-space: nowrap;
 }
 
 .account-table th:nth-child(2),
 .account-table td:nth-child(2) {
-  width: 120px; /* Action */
+  width: 120px; 
 }
 
 .account-table th:nth-child(3),
 .account-table td:nth-child(3) {
-  width: 90px; /* Warehouse (now 3rd) */
+  width: 90px; 
 }
 
 .account-table th:nth-child(4),
 .account-table td:nth-child(4) {
-  width: 160px; /* Item (now 4th) */
+  width: 160px; 
 }
 
 .account-table th:nth-child(5),
 .account-table td:nth-child(5) {
-  width: 160px; /* Location */
+  width: 160px; 
 }
 
-/* Action coloring */
+
 .account-table td.restocked {
   color: #2ecc71;
   font-weight: bold;

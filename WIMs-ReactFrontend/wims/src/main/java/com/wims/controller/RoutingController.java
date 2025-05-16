@@ -34,7 +34,7 @@ public class RoutingController {
         if ("ADMIN".equals(user.getRole())) {
             return "redirect:/location-selection";
         } else if ("CLERK".equals(user.getRole())) {
-            // FIXED: Dynamically redirect to the warehouse assigned to the clerk
+            
             String warehouseName = URLEncoder.encode(user.getWarehouse(), StandardCharsets.UTF_8);
             return "redirect:/warehouse/" + warehouseName;
         }

@@ -16,7 +16,7 @@ public class Log {
     @Column(name = "date_time")
     private LocalDateTime dateTime;
 
-    @Column(name = "user_id") // ✅ New: links to User.id
+    @Column(name = "user_id") 
     private Long userId;
 
     @Column(name = "username")
@@ -49,7 +49,7 @@ public class Log {
     @Transient
     private List<Log> relatedLogs;
 
-    // --- Getters and Setters ---
+   
 
     public Long getId() {
         return id;

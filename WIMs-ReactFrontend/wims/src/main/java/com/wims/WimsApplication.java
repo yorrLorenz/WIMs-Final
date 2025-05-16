@@ -25,7 +25,7 @@ CommandLineRunner run(UserRepository userRepository, PasswordEncoder encoder, Wa
             admin.setPassword(encoder.encode("admin123"));
             admin.setRole("ADMIN");
             admin.setWarehouse("Global");
-            admin.setImageUrl(""); // ✅ Explicitly set as empty
+            admin.setImageUrl(""); 
             userRepository.save(admin);
         }
     };

@@ -5,7 +5,7 @@ import "./LoginPage.css";
 const LoginPage = () => {
   const [form, setForm] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false); // ✅ loading state
+  const [isLoading, setIsLoading] = useState(false); 
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -16,7 +16,7 @@ const LoginPage = () => {
     e.preventDefault();
     if (isLoading) return;
 
-    setIsLoading(true); // ✅ block spam
+    setIsLoading(true); 
     setError("");
 
     try {
@@ -56,7 +56,7 @@ const LoginPage = () => {
       console.error("Login error", err);
       setError("Network error");
     } finally {
-      setIsLoading(false); // ✅ reset after response
+      setIsLoading(false); 
     }
   };
 

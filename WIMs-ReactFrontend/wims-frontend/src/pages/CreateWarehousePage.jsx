@@ -7,7 +7,7 @@ import "./CreateWarehousePage.css";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-// Fix default marker icon bug
+
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
@@ -27,7 +27,7 @@ const LocationSelector = ({ onLocationSelect }) => {
 const CreateWarehousePage = () => {
   const [warehouseName, setWarehouseName] = useState("");
   const [location, setLocation] = useState(null);
-  const [isLoading, setIsLoading] = useState(false); // ✅ new loading state
+  const [isLoading, setIsLoading] = useState(false); 
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -52,7 +52,7 @@ const CreateWarehousePage = () => {
     };
 
     try {
-      setIsLoading(true); // ✅ disable buttons
+      setIsLoading(true); 
       const res = await fetch("https://wims-w48m.onrender.com/api/warehouses", {
         method: "POST",
         credentials: "include",
@@ -74,7 +74,7 @@ const CreateWarehousePage = () => {
       console.error(err);
       toast.error("Network error.");
     } finally {
-      setIsLoading(false); // ✅ re-enable
+      setIsLoading(false); 
     }
   };
 

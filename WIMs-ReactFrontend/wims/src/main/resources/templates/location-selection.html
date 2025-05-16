@@ -6,7 +6,7 @@
 <body>
 <h2>Select a Warehouse</h2>
 
-<!-- Dynamic warehouse buttons -->
+
 <div th:if="${warehouses != null}">
     <ul>
         <li th:each="warehouse : ${warehouses}">
@@ -24,7 +24,7 @@
 
 
   
-<!-- Admin options -->
+
 <form th:action="@{/accounts/create}" method="get">
     <button type="submit">Create New Account</button>
 </form>

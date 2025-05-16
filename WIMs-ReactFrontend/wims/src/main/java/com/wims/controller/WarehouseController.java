@@ -19,7 +19,7 @@ public class WarehouseController {
     @GetMapping("/create-warehouse")
     public String showCreateForm(Model model) {
         model.addAttribute("warehouse", new Warehouse());
-        return "create-warehouse"; // maps to create-warehouse.html
+        return "create-warehouse"; 
     }
 
     @PostMapping("/create-warehouse")
@@ -28,7 +28,7 @@ public class WarehouseController {
 
         if (existing.isEmpty()) {
             warehouse.setName(warehouse.getName().trim());
-            warehouse.setCode(generateNextWarehouseCode()); // assign unique 2-letter code
+            warehouse.setCode(generateNextWarehouseCode()); 
             warehouseRepository.save(warehouse);
         }
 

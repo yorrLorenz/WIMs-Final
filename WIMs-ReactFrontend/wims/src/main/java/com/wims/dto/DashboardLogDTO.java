@@ -41,7 +41,7 @@ public class DashboardLogDTO {
         this.previousLocation = previousLocation;
     }
 
-    // Getters and Setters
+   
     public Long getId() { return id; }
     public LocalDateTime getDateTime() { return dateTime; }
     public String getUsername() { return username; }

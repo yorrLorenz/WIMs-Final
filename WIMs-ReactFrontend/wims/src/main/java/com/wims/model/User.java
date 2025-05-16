@@ -16,9 +16,9 @@ public class User {
     private String warehouse;
 
     @Column(name = "image_url")
-    private String imageUrl; // 🔹 New field for profile image
+    private String imageUrl; 
 
-    // --- GETTERS AND SETTERS ---
+    
 
     public Long getId() {
         return id;

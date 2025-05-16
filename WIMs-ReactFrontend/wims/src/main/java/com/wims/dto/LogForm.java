@@ -2,11 +2,11 @@ package com.wims.dto;
 
 public class LogForm {
     private String action;
-    private String item; // changed from itemName to item
+    private String item; 
     private String warehouseLocation;
     private String groupId;
 
-    // Getters and Setters
+   
     public String getAction() {
         return action;
     }

@@ -19,7 +19,7 @@ const AdminDashboard = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [searchError, setSearchError] = useState("");
 
-  // Initial fetch
+  
   useEffect(() => {
     fetch("https://wims-w48m.onrender.com/api/admin/logs", {
       method: "GET",
@@ -30,7 +30,7 @@ const AdminDashboard = () => {
       .catch((err) => console.error("Failed to load admin logs", err));
   }, []);
 
-  // WebSocket listener for all logs
+  
   useEffect(() => {
     const socket = new SockJS("https://wims-w48m.onrender.com/ws");
     const stompClient = new Client({

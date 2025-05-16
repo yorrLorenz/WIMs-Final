@@ -41,8 +41,8 @@ public class ProductController {
         Warehouse warehouse = warehouseOpt.get();
 
         Log log = new Log();
-        log.setUserId(user.getId()); // ✅ store user ID
-        log.setUsername(user.getUsername()); // for display
+        log.setUserId(user.getId()); 
+        log.setUsername(user.getUsername()); 
         log.setAction(request.getAction());
         log.setWarehouse(request.getWarehouse());
         log.setDateTime(LocalDateTime.now());

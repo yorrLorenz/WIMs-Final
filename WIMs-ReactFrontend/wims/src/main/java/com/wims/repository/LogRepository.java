@@ -18,12 +18,12 @@ public interface LogRepository extends JpaRepository<Log, Long> {
 
     List<Log> findAllByOrderByDateTimeDesc();
 
-    // For Admin logs with date filter (all warehouses)
+   
     List<Log> findByDateTimeBetweenOrderByDateTimeDesc(LocalDateTime start, LocalDateTime end);
 
-    List<Log> findByUsernameOrderByDateTimeDesc(String username); // 🟡 (can be deprecated eventually)
+    List<Log> findByUsernameOrderByDateTimeDesc(String username); 
 
-    List<Log> findByUserIdOrderByDateTimeDesc(Long userId); // ✅ NEW: safe user-specific logs
+    List<Log> findByUserIdOrderByDateTimeDesc(Long userId); 
 
     long countByWarehouseAndDateTimeBetween(String warehouse, LocalDateTime start, LocalDateTime end);
 

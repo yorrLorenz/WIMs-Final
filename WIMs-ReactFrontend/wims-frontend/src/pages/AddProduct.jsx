@@ -16,7 +16,7 @@ const AddProduct = () => {
     units: 1,
   });
 
-  const [isLoading, setIsLoading] = useState(false); // ✅ loading state
+  const [isLoading, setIsLoading] = useState(false); 
 
   const handleChange = async (e) => {
     const { name, value } = e.target;
@@ -71,7 +71,7 @@ const AddProduct = () => {
     }
 
     try {
-      setIsLoading(true); // ✅ disable button
+      setIsLoading(true); 
       const res = await fetch("https://wims-w48m.onrender.com/api/products/add", {
         method: "POST",
         credentials: "include",
@@ -90,7 +90,7 @@ const AddProduct = () => {
       console.error("Network error:", err);
       toast.error("Network error");
     } finally {
-      setIsLoading(false); // ✅ re-enable after response
+      setIsLoading(false); 
     }
   };
 

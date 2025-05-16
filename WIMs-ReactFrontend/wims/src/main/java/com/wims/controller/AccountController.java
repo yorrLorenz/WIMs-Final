@@ -25,8 +25,8 @@ public class AccountController {
 
     @GetMapping("/create")
     public String showCreateAccountForm(Model model) {
-        model.addAttribute("accountForm", new AccountForm()); // use "accountForm" for binding
-        model.addAttribute("warehouses", warehouseRepository.findAll()); // dynamic dropdown
+        model.addAttribute("accountForm", new AccountForm()); 
+        model.addAttribute("warehouses", warehouseRepository.findAll()); 
         return "create-account";
     }
 

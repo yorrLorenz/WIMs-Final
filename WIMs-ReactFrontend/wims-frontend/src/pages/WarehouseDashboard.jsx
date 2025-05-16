@@ -14,7 +14,7 @@ const WarehouseDashboard = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showAll, setShowAll] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false); // ✅ added
+  const [isSubmitting, setIsSubmitting] = useState(false); 
 
   const [formData, setFormData] = useState({
     action: "Restocked",
@@ -100,7 +100,7 @@ const WarehouseDashboard = () => {
       return;
     }
 
-    setIsSubmitting(true); // ✅ lock buttons
+    setIsSubmitting(true); 
 
     try {
       const username = localStorage.getItem("username");
@@ -124,7 +124,7 @@ const WarehouseDashboard = () => {
     } catch {
       toast.error("Network error.");
     } finally {
-      setIsSubmitting(false); // ✅ unlock
+      setIsSubmitting(false); 
     }
   };
 
