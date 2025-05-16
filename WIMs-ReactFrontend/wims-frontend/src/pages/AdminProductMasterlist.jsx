@@ -12,19 +12,24 @@ const AdminProductMasterlist = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("https://wims-w48m.onrender.com/api/warehouses")
-      .then(res => res.json())
-      .then(data => setWarehouses(data.map(w => w.name)));
+    fetch("https://wims-w48m.onrender.com/api/warehouses", {
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data) => setWarehouses(data.map((w) => w.name)))
+      .catch((err) => console.error("Failed to load warehouses", err));
   }, []);
 
   useEffect(() => {
-    const url = selectedWarehouse === "All"
-      ? "https://wims-w48m.onrender.com/api/products/all"
-      : `https://wims-w48m.onrender.com/api/products/by-warehouse?name=${selectedWarehouse}`;
+    const url =
+      selectedWarehouse === "All"
+        ? "https://wims-w48m.onrender.com/api/products/all"
+        : `https://wims-w48m.onrender.com/api/products/by-warehouse?name=${selectedWarehouse}`;
 
-    fetch(url)
-      .then(res => res.json())
-      .then(data => setProducts(data));
+    fetch(url, { credentials: "include" })
+      .then((res) => res.json())
+      .then((data) => setProducts(data))
+      .catch((err) => console.error("Failed to load products", err));
   }, [selectedWarehouse]);
 
   const toggleExpand = async (groupId) => {
@@ -32,9 +37,16 @@ const AdminProductMasterlist = () => {
       setExpandedGroupId(null);
     } else {
       if (!logs[groupId]) {
-        const res = await fetch(`https://wims-w48m.onrender.com/api/logs/group/${groupId}`);
-        const data = await res.json();
-        setLogs(prev => ({ ...prev, [groupId]: data }));
+        try {
+          const res = await fetch(
+            `https://wims-w48m.onrender.com/api/logs/group/${groupId}`,
+            { credentials: "include" }
+          );
+          const data = await res.json();
+          setLogs((prev) => ({ ...prev, [groupId]: data }));
+        } catch (err) {
+          console.error("Failed to load logs", err);
+        }
       }
       setExpandedGroupId(groupId);
     }
@@ -51,8 +63,10 @@ const AdminProductMasterlist = () => {
           onChange={(e) => setSelectedWarehouse(e.target.value)}
         >
           <option value="All">All Warehouses</option>
-          {warehouses.map(name => (
-            <option key={name} value={name}>{name}</option>
+          {warehouses.map((name) => (
+            <option key={name} value={name}>
+              {name}
+            </option>
           ))}
         </select>
       </div>
@@ -87,10 +101,11 @@ const AdminProductMasterlist = () => {
                 <tr>
                   <td colSpan="6">
                     <ul>
-                      {logs[p.groupId].map(log => (
+                      {logs[p.groupId].map((log) => (
                         <li key={log.id}>
                           {log.action} {log.units} unit(s) on{" "}
-                          {new Date(log.dateTime).toLocaleString()} by {log.username}
+                          {new Date(log.dateTime).toLocaleString()} by{" "}
+                          {log.username}
                         </li>
                       ))}
                     </ul>

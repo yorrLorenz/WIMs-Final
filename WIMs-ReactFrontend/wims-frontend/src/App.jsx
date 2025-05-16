@@ -87,9 +87,12 @@ function App() {
 } />
 
 
-<Route
-  path="/admin/products"
-  element={<PrivateRoute><AdminProductMasterlist /></PrivateRoute>}
+<Route path="/admin/products" element={
+  <PrivateRoute> 
+<DashboardLayout>
+    <AdminProductMasterlist />
+    </DashboardLayout>
+    </PrivateRoute>}
 />
 
 
