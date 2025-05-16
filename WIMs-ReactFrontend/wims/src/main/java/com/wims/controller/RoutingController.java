@@ -48,4 +48,6 @@ public class RoutingController {
         model.addAttribute("warehouses", warehouses);
         return "location-selection";
     }
+
+    //test
 }
