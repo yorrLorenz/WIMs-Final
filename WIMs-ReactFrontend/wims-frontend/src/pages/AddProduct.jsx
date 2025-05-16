@@ -16,6 +16,8 @@ const AddProduct = () => {
     units: 1,
   });
 
+  const [isLoading, setIsLoading] = useState(false); // ✅ loading state
+
   const handleChange = async (e) => {
     const { name, value } = e.target;
     const updatedForm = { ...formData, [name]: value };
@@ -23,10 +25,10 @@ const AddProduct = () => {
 
     if (name === "groupId" && (updatedForm.action === "Removed" || updatedForm.action === "Move")) {
       try {
-        const res = await fetch(`https://wims-w48m.onrender.com/api/logs/group/${encodeURIComponent(value)}`, {
-          method: "GET",
-          credentials: "include",
-        });
+        const res = await fetch(
+          `https://wims-w48m.onrender.com/api/logs/group/${encodeURIComponent(value)}`,
+          { method: "GET", credentials: "include" }
+        );
 
         if (res.ok) {
           const data = await res.json();
@@ -47,6 +49,7 @@ const AddProduct = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isLoading) return;
 
     const body = {
       ...formData,
@@ -68,6 +71,7 @@ const AddProduct = () => {
     }
 
     try {
+      setIsLoading(true); // ✅ disable button
       const res = await fetch("https://wims-w48m.onrender.com/api/products/add", {
         method: "POST",
         credentials: "include",
@@ -85,6 +89,8 @@ const AddProduct = () => {
     } catch (err) {
       console.error("Network error:", err);
       toast.error("Network error");
+    } finally {
+      setIsLoading(false); // ✅ re-enable after response
     }
   };
 
@@ -109,14 +115,7 @@ const AddProduct = () => {
               <label>Location:</label>
               <input type="text" name="location" value={formData.location} onChange={handleChange} required />
               <label>Units:</label>
-              <input
-                type="number"
-                name="units"
-                min="1"
-                value={formData.units}
-                onChange={handleChange}
-                required
-              />
+              <input type="number" name="units" min="1" value={formData.units} onChange={handleChange} required />
             </>
           )}
 
@@ -128,6 +127,8 @@ const AddProduct = () => {
               <input type="text" name="item" value={formData.item} readOnly />
               <label>Location:</label>
               <input type="text" name="location" value={formData.location} readOnly />
+              <label>Units:</label>
+              <input type="number" name="units" min="1" value={formData.units} onChange={handleChange} required />
             </>
           )}
 
@@ -139,12 +140,18 @@ const AddProduct = () => {
               <input type="text" name="item" value={formData.item} readOnly />
               <label>New Location:</label>
               <input type="text" name="location" value={formData.location} onChange={handleChange} required />
+              <label>Units:</label>
+              <input type="number" name="units" min="1" value={formData.units} onChange={handleChange} required />
             </>
           )}
 
           <div className="form-actions">
-            <button type="submit">Save</button>
-            <button type="button" onClick={() => navigate(-1)}>Cancel</button>
+            <button type="submit" disabled={isLoading}>
+              {isLoading ? "Saving..." : "Save"}
+            </button>
+            <button type="button" onClick={() => navigate(-1)} disabled={isLoading}>
+              Cancel
+            </button>
           </div>
         </form>
       </div>

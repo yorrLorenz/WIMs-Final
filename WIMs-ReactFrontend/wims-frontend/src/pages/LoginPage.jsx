@@ -5,6 +5,7 @@ import "./LoginPage.css";
 const LoginPage = () => {
   const [form, setForm] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false); // ✅ loading state
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -13,6 +14,11 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isLoading) return;
+
+    setIsLoading(true); // ✅ block spam
+    setError("");
+
     try {
       const res = await fetch("https://wims-w48m.onrender.com/api/login", {
         method: "POST",
@@ -33,23 +39,24 @@ const LoginPage = () => {
           navigate("/select-warehouse");
         }
       } else {
-  let msg = "Login failed";
-  try {
-    const result = await res.json();
-    msg = result.message || msg;
-  } catch (e) {
-    if (res.status === 401) {
-      msg = "Invalid credentials.";
-    } else if (res.status === 403) {
-      msg = "This account is already active on another device.";
-    }
-  }
-  setError(msg);
-}
-
+        let msg = "Login failed";
+        try {
+          const result = await res.json();
+          msg = result.message || msg;
+        } catch (e) {
+          if (res.status === 401) {
+            msg = "Invalid credentials.";
+          } else if (res.status === 403) {
+            msg = "This account is already active on another device.";
+          }
+        }
+        setError(msg);
+      }
     } catch (err) {
       console.error("Login error", err);
       setError("Network error");
+    } finally {
+      setIsLoading(false); // ✅ reset after response
     }
   };
 
@@ -74,6 +81,7 @@ const LoginPage = () => {
             value={form.username}
             onChange={handleChange}
             required
+            disabled={isLoading}
           />
           <input
             type="password"
@@ -82,8 +90,11 @@ const LoginPage = () => {
             value={form.password}
             onChange={handleChange}
             required
+            disabled={isLoading}
           />
-          <button type="submit">Log In</button>
+          <button type="submit" disabled={isLoading}>
+            {isLoading ? "Logging in..." : "Log In"}
+          </button>
         </form>
       </div>
     </div>

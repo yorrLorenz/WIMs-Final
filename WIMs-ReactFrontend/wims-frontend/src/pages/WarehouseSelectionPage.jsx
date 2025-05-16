@@ -23,6 +23,7 @@ const WarehouseSelectionPage = () => {
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [selectedWarehouse, setSelectedWarehouse] = useState(null);
   const [confirmStep, setConfirmStep] = useState(0);
+  const [deleting, setDeleting] = useState(false); // ✅ new
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
@@ -77,9 +78,12 @@ const WarehouseSelectionPage = () => {
     setSelectedWarehouse(null);
     setSelectedType("Accounts");
     setConfirmStep(0);
+    setDeleting(false);
   };
 
   const handleDelete = () => {
+    if (deleting) return;
+
     if (confirmStep === 0) {
       setConfirmStep(1);
       return;
@@ -89,6 +93,8 @@ const WarehouseSelectionPage = () => {
       selectedType === "Accounts"
         ? `https://wims-w48m.onrender.com/api/accounts/${selectedAccount.id}`
         : `https://wims-w48m.onrender.com/api/warehouses/${selectedWarehouse.id}`;
+
+    setDeleting(true);
 
     fetch(deleteUrl, {
       method: "DELETE",
@@ -107,7 +113,8 @@ const WarehouseSelectionPage = () => {
         }
         closeModal();
       })
-      .catch((err) => toast.error("Error deleting: " + err.message));
+      .catch((err) => toast.error("Error deleting: " + err.message))
+      .finally(() => setDeleting(false));
   };
 
   if (loading) return <p className="page-container">Loading...</p>;
@@ -218,10 +225,14 @@ const WarehouseSelectionPage = () => {
                   Are you sure you want to remove{" "}
                   <strong>{selectedAccount?.username || selectedWarehouse?.name}</strong>?
                 </p>
-                <button onClick={handleDelete}>
-                  {confirmStep === 0 ? "Confirm Delete" : "Yes, Delete Permanently"}
+                <button onClick={handleDelete} disabled={deleting}>
+                  {deleting
+                    ? "Deleting..."
+                    : confirmStep === 0
+                    ? "Confirm Delete"
+                    : "Yes, Delete Permanently"}
                 </button>
-                <button onClick={closeModal}>Cancel</button>
+                <button onClick={closeModal} disabled={deleting}>Cancel</button>
               </>
             ) : (
               <button onClick={closeModal}>Cancel</button>

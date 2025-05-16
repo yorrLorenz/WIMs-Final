@@ -27,10 +27,12 @@ const LocationSelector = ({ onLocationSelect }) => {
 const CreateWarehousePage = () => {
   const [warehouseName, setWarehouseName] = useState("");
   const [location, setLocation] = useState(null);
+  const [isLoading, setIsLoading] = useState(false); // ✅ new loading state
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isLoading) return;
 
     const trimmedName = warehouseName.trim();
     if (trimmedName === "") {
@@ -50,11 +52,12 @@ const CreateWarehousePage = () => {
     };
 
     try {
+      setIsLoading(true); // ✅ disable buttons
       const res = await fetch("https://wims-w48m.onrender.com/api/warehouses", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body), // ✅ FIXED HERE
+        body: JSON.stringify(body),
       });
 
       if (res.status === 409) {
@@ -70,6 +73,8 @@ const CreateWarehousePage = () => {
     } catch (err) {
       console.error(err);
       toast.error("Network error.");
+    } finally {
+      setIsLoading(false); // ✅ re-enable
     }
   };
 
@@ -95,13 +100,22 @@ const CreateWarehousePage = () => {
           value={warehouseName}
           onChange={(e) => setWarehouseName(e.target.value)}
           required
+          disabled={isLoading}
         />
 
-        <button type="submit" className="brown-btn">Create</button>
-        <button type="button" className="brown-btn back" onClick={() => navigate("/select-warehouse")}>
+        <button type="submit" className="brown-btn" disabled={isLoading}>
+          {isLoading ? "Creating..." : "Create"}
+        </button>
+        <button
+          type="button"
+          className="brown-btn back"
+          onClick={() => navigate("/select-warehouse")}
+          disabled={isLoading}
+        >
           ← Back
         </button>
       </form>
+
       <ToastContainer position="top-center" autoClose={3000} />
     </div>
   );

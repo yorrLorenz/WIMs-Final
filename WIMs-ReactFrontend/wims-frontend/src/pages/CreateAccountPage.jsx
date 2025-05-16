@@ -17,6 +17,7 @@ const CreateAccountPage = () => {
   const [imageFile, setImageFile] = useState(null);
   const [useWebcam, setUseWebcam] = useState(false);
   const [captured, setCaptured] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // ✅ New loading state
   const webcamRef = useRef(null);
 
   useEffect(() => {
@@ -51,6 +52,7 @@ const CreateAccountPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isLoading) return;
 
     const trimmedUsername = form.username.trim();
     const trimmedPassword = form.password.trim();
@@ -72,10 +74,11 @@ const CreateAccountPage = () => {
     }
 
     try {
+      setIsLoading(true); // ✅ block button
       const res = await fetch("https://wims-w48m.onrender.com/api/accounts/create", {
         method: "POST",
         credentials: "include",
-        body: formData, // ✅ no need to set headers, browser handles it
+        body: formData,
       });
 
       if (res.ok) {
@@ -88,6 +91,8 @@ const CreateAccountPage = () => {
     } catch (err) {
       console.error("Failed to create account:", err);
       toast.error("Network error. Please try again.");
+    } finally {
+      setIsLoading(false); // ✅ re-enable
     }
   };
 
@@ -160,12 +165,12 @@ const CreateAccountPage = () => {
 
         <div className="form-actions">
           <div className="form-button">
-            <button type="submit" className="brown-btn wide">
-              Create Account
+            <button type="submit" className="brown-btn wide" disabled={isLoading}>
+              {isLoading ? "Creating..." : "Create Account"}
             </button>
           </div>
           <div className="form-button">
-            <button type="button" className="brown-btn back" onClick={() => navigate("/select-warehouse")}>
+            <button type="button" className="brown-btn back" onClick={() => navigate("/select-warehouse")} disabled={isLoading}>
               ← Back
             </button>
           </div>

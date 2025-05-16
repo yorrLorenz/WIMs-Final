@@ -13,8 +13,9 @@ const WarehouseDashboard = () => {
   const [expanded, setExpanded] = useState({});
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showAll, setShowAll] = useState(false);
-
   const [showAddModal, setShowAddModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false); // ✅ added
+
   const [formData, setFormData] = useState({
     action: "Restocked",
     item: "",
@@ -22,6 +23,10 @@ const WarehouseDashboard = () => {
     groupId: "",
     units: 1,
   });
+
+  useEffect(() => {
+    fetchLogs();
+  }, [warehouseId]);
 
   const fetchLogs = () => {
     fetch(`https://wims-w48m.onrender.com/api/dashboard/${encodeURIComponent(warehouseId)}`, {
@@ -42,16 +47,10 @@ const WarehouseDashboard = () => {
   };
 
   useEffect(() => {
-    fetchLogs();
-  }, [warehouseId]);
-
-  // Clock
-  useEffect(() => {
     const interval = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(interval);
   }, []);
 
-  // WebSocket real-time listener
   useEffect(() => {
     const socket = new SockJS("https://wims-w48m.onrender.com/ws");
     const stompClient = new Client({
@@ -59,7 +58,7 @@ const WarehouseDashboard = () => {
       onConnect: () => {
         stompClient.subscribe(`/topic/logs/${warehouseId}`, (message) => {
           const newLog = JSON.parse(message.body);
-          setLogs((prevLogs) => [newLog, ...prevLogs]); // prepend new log
+          setLogs((prevLogs) => [newLog, ...prevLogs]);
         });
       },
       onStompError: (frame) => {
@@ -68,9 +67,7 @@ const WarehouseDashboard = () => {
     });
 
     stompClient.activate();
-    return () => {
-      stompClient.deactivate();
-    };
+    return () => stompClient.deactivate();
   }, [warehouseId]);
 
   const toggleExpand = (logId) => {
@@ -97,10 +94,13 @@ const WarehouseDashboard = () => {
   };
 
   const handleSubmit = async () => {
+    if (isSubmitting) return;
     if (!validateForm()) {
       toast.error("Please complete all required fields.");
       return;
     }
+
+    setIsSubmitting(true); // ✅ lock buttons
 
     try {
       const username = localStorage.getItem("username");
@@ -123,6 +123,8 @@ const WarehouseDashboard = () => {
       }
     } catch {
       toast.error("Network error.");
+    } finally {
+      setIsSubmitting(false); // ✅ unlock
     }
   };
 
@@ -206,136 +208,109 @@ const WarehouseDashboard = () => {
           <div className="modal">
             <div className="modal-content">
               <h3>{getModalTitle()}</h3>
-              
 
-<label>Action:</label>
-<select
-  name="action"
-  value={formData.action}
-  onChange={(e) => setFormData({ ...formData, action: e.target.value })}
->
-  <option value="Restocked">Restock</option>
-  <option value="Removed">Remove</option>
-  <option value="Move">Move</option>
-</select>
+              <label>Action:</label>
+              <select
+                name="action"
+                value={formData.action}
+                onChange={(e) => setFormData({ ...formData, action: e.target.value })}
+              >
+                <option value="Restocked">Restock</option>
+                <option value="Removed">Remove</option>
+                <option value="Move">Move</option>
+              </select>
 
-{formData.action === "Restocked" && (
-  <>
-    <label>Item:</label>
-    <input
-      name="item"
-      value={formData.item}
-      onChange={(e) => setFormData({ ...formData, item: e.target.value })}
-    />
-    <label>Location:</label>
-    <input
-      name="location"
-      value={formData.location}
-      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-    />
-    <label>Units:</label>
-    <input
-      type="number"
-      name="units"
-      min="1"
-      value={formData.units}
-      onChange={(e) => setFormData({ ...formData, units: parseInt(e.target.value) || 1 })}
-    />
-  </>
-)}
+              {formData.action === "Restocked" && (
+                <>
+                  <label>Item:</label>
+                  <input name="item" value={formData.item} onChange={(e) => setFormData({ ...formData, item: e.target.value })} />
+                  <label>Location:</label>
+                  <input name="location" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
+                  <label>Units:</label>
+                  <input type="number" name="units" min="1" value={formData.units} onChange={(e) => setFormData({ ...formData, units: parseInt(e.target.value) || 1 })} />
+                </>
+              )}
 
-{(formData.action === "Removed" || formData.action === "Move") && (
-  <>
-    <label>Group ID:</label>
-    <input
-      name="groupId"
-      value={formData.groupId}
-      onChange={async (e) => {
-        const groupId = e.target.value.trim();
-        setFormData((prev) => ({ ...prev, groupId }));
+              {(formData.action === "Removed" || formData.action === "Move") && (
+                <>
+                  <label>Group ID:</label>
+                  <input
+                    name="groupId"
+                    value={formData.groupId}
+                    onChange={async (e) => {
+                      const groupId = e.target.value.trim();
+                      setFormData((prev) => ({ ...prev, groupId }));
 
-        if (!groupId) {
-          toast.error("Group ID cannot be empty");
-          return;
-        }
+                      if (!groupId) {
+                        toast.error("Group ID cannot be empty");
+                        return;
+                      }
 
-        try {
-          const res = await fetch(`https://wims-w48m.onrender.com/api/logs/group/${groupId}`, {
-            method: "GET",
-            credentials: "include",
-            headers: { "Content-Type": "application/json" },
-          });
+                      try {
+                        const res = await fetch(`https://wims-w48m.onrender.com/api/logs/group/${groupId}`, {
+                          method: "GET",
+                          credentials: "include",
+                          headers: { "Content-Type": "application/json" },
+                        });
 
-          const result = await res.json();
-          const logs = Array.isArray(result) ? result : [result];
+                        const result = await res.json();
+                        const logs = Array.isArray(result) ? result : [result];
 
-          if (!res.ok || !logs.length) {
-            toast.error("Invalid Group ID");
-            return;
-          }
+                        if (!res.ok || !logs.length) {
+                          toast.error("Invalid Group ID");
+                          return;
+                        }
 
-          logs.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
-          const latestValid = logs.find((log) => log.action !== "Removed");
+                        logs.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
+                        const latestValid = logs.find((log) => log.action !== "Removed");
 
-          if (!latestValid) {
-            toast.error("All units already removed for this Group ID.");
-            return;
-          }
+                        if (!latestValid) {
+                          toast.error("All units already removed for this Group ID.");
+                          return;
+                        }
 
-          const maxUnits = latestValid.units || 1;
+                        const maxUnits = latestValid.units || 1;
 
-          setFormData((prev) => ({
-            ...prev,
-            item: latestValid.item.split(" (")[0],
-            location: prev.action === "Removed" ? latestValid.location : "",
-            units: maxUnits,
-          }));
-        } catch (err) {
-          console.error("Error fetching logs:", err);
-          toast.error("Failed to fetch logs");
-        }
-      }}
-    />
+                        setFormData((prev) => ({
+                          ...prev,
+                          item: latestValid.item.split(" (")[0],
+                          location: prev.action === "Removed" ? latestValid.location : "",
+                          units: maxUnits,
+                        }));
+                      } catch (err) {
+                        console.error("Error fetching logs:", err);
+                        toast.error("Failed to fetch logs");
+                      }
+                    }}
+                  />
 
-    <label>Item:</label>
-    <input name="item" value={formData.item} readOnly />
+                  <label>Item:</label>
+                  <input name="item" value={formData.item} readOnly />
 
-    {formData.action === "Removed" && (
-      <>
-        <label>Units to Remove:</label>
-        <input
-          type="number"
-          name="units"
-          min="1"
-          value={formData.units}
-          onChange={(e) => setFormData({ ...formData, units: parseInt(e.target.value) || 1 })}
-        />
-      </>
-    )}
+                  {formData.action === "Removed" && (
+                    <>
+                      <label>Units to Remove:</label>
+                      <input type="number" name="units" min="1" value={formData.units} onChange={(e) => setFormData({ ...formData, units: parseInt(e.target.value) || 1 })} />
+                    </>
+                  )}
 
-    {formData.action === "Move" && (
-      <>
-        <label>New Location:</label>
-        <input
-          name="location"
-          value={formData.location}
-          onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-        />
-        <label>Units to Move:</label>
-        <input
-          type="number"
-          name="units"
-          min="1"
-          value={formData.units}
-          onChange={(e) => setFormData({ ...formData, units: parseInt(e.target.value) || 1 })}
-        />
-      </>
-    )}
-  </>
-)}
+                  {formData.action === "Move" && (
+                    <>
+                      <label>New Location:</label>
+                      <input name="location" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
+                      <label>Units to Move:</label>
+                      <input type="number" name="units" min="1" value={formData.units} onChange={(e) => setFormData({ ...formData, units: parseInt(e.target.value) || 1 })} />
+                    </>
+                  )}
+                </>
+              )}
 
-              <button onClick={handleSubmit}>Submit</button>
-              <button onClick={() => setShowAddModal(false)}>Cancel</button>
+              <button onClick={handleSubmit} disabled={isSubmitting}>
+                {isSubmitting ? "Submitting..." : "Submit"}
+              </button>
+              <button onClick={() => setShowAddModal(false)} disabled={isSubmitting}>
+                Cancel
+              </button>
             </div>
           </div>
         )}
