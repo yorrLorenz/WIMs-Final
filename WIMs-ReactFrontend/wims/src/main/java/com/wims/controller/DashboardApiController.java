@@ -9,8 +9,7 @@ import com.wims.repository.ProductRepository;
 import com.wims.repository.WarehouseRepository;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,67 +21,71 @@ public class DashboardApiController {
     private final LogRepository logRepository;
     private final ProductRepository productRepository;
 
-    public DashboardApiController(WarehouseRepository warehouseRepository, LogRepository logRepository, ProductRepository productRepository) {
+    public DashboardApiController(
+            WarehouseRepository warehouseRepository,
+            LogRepository logRepository,
+            ProductRepository productRepository) {
         this.warehouseRepository = warehouseRepository;
         this.logRepository = logRepository;
         this.productRepository = productRepository;
     }
+
+    // 🔧 FIXED to use Instant instead of LocalDateTime
     @GetMapping("/dashboard-by-date")
-public DashboardResponseDTO getLogsByDateForWarehouse(
-        @RequestParam("date") String date,
-        @RequestParam("warehouse") String warehouse
-) {
-    LocalDate parsedDate = LocalDate.parse(date);
-    LocalDateTime start = parsedDate.atStartOfDay();
-    LocalDateTime end = parsedDate.atTime(23, 59, 59);
+    public DashboardResponseDTO getLogsByDateForWarehouse(
+            @RequestParam("date") String date,
+            @RequestParam("warehouse") String warehouse
+    ) {
+        LocalDate parsedDate = LocalDate.parse(date);
+        Instant start = parsedDate.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant end = parsedDate.atTime(23, 59, 59).atZone(ZoneOffset.UTC).toInstant();
 
-    List<Log> logs = logRepository.findByWarehouseAndDateTimeBetweenOrderByDateTimeDesc(
-            warehouse, start, end
-    );
+        List<Log> logs = logRepository.findByWarehouseAndDateTimeBetweenOrderByDateTimeDesc(
+                warehouse, start, end
+        );
 
-    List<DashboardLogDTO> logDtos = logs.stream()
-            .map(log -> {
-                DashboardLogDTO dto = new DashboardLogDTO(
-                        log.getId(),
-                        log.getDateTime(),
-                        log.getUsername(),
-                        log.getAction(),
-                        log.getItem(),
-                        log.getWarehouse(),
-                        log.getLocation(),
-                        log.getGroupId(),
-                        log.getUnits(),
-                        log.getRemainingUnits(),
-                        log.getPreviousLocation()
-                );
+        List<DashboardLogDTO> logDtos = logs.stream()
+                .map(log -> {
+                    DashboardLogDTO dto = new DashboardLogDTO(
+                            log.getId(),
+                            log.getDateTime(),
+                            log.getUsername(),
+                            log.getAction(),
+                            log.getItem(),
+                            log.getWarehouse(),
+                            log.getLocation(),
+                            log.getGroupId(),
+                            log.getUnits(),
+                            log.getRemainingUnits(),
+                            log.getPreviousLocation()
+                    );
 
-                if (log.getGroupId() != null) {
-                    List<DashboardLogDTO> relatedLogs = logRepository.findByGroupId(log.getGroupId()).stream()
-                            .map(r -> new DashboardLogDTO(
-                                    r.getId(),
-                                    r.getDateTime(),
-                                    r.getUsername(),
-                                    r.getAction(),
-                                    r.getItem(),
-                                    r.getWarehouse(),
-                                    r.getLocation(),
-                                    r.getGroupId(),
-                                    r.getUnits(),
-                                    r.getRemainingUnits(),
-                                    r.getPreviousLocation()
-                            ))
-                            .toList();
+                    if (log.getGroupId() != null) {
+                        List<DashboardLogDTO> relatedLogs = logRepository.findByGroupId(log.getGroupId()).stream()
+                                .map(r -> new DashboardLogDTO(
+                                        r.getId(),
+                                        r.getDateTime(),
+                                        r.getUsername(),
+                                        r.getAction(),
+                                        r.getItem(),
+                                        r.getWarehouse(),
+                                        r.getLocation(),
+                                        r.getGroupId(),
+                                        r.getUnits(),
+                                        r.getRemainingUnits(),
+                                        r.getPreviousLocation()
+                                ))
+                                .toList();
 
-                    dto.setRelatedLogs(relatedLogs);
-                }
+                        dto.setRelatedLogs(relatedLogs);
+                    }
 
-                return dto;
-            })
-            .toList();
+                    return dto;
+                })
+                .toList();
 
-    return new DashboardResponseDTO(warehouse, logDtos);
-}
-
+        return new DashboardResponseDTO(warehouse, logDtos);
+    }
 
     @GetMapping("/dashboard/{warehouseId}")
     public DashboardResponseDTO getDashboardByWarehouse(@PathVariable String warehouseId) {

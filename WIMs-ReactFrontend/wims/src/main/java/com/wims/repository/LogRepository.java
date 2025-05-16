@@ -35,5 +35,6 @@ List<Product> findByWarehouse(String warehouse);
 
     int countByGroupIdStartingWith(String prefix);
     List<Log> findByDateTimeBetweenOrderByDateTimeDesc(Instant start, Instant end);
+List<Log> findByWarehouseAndDateTimeBetweenOrderByDateTimeDesc(String warehouse, Instant start, Instant end);
 
 }
