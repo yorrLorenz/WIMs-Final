@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FaBars, FaSearch } from "react-icons/fa";
+import { FaBars, FaSearch, FaSortAlphaDown, FaSortAlphaUp } from "react-icons/fa";
 import "./AdminProductMasterlist.css";
 
 const AdminProductMasterlist = () => {
@@ -9,6 +9,8 @@ const AdminProductMasterlist = () => {
   const [expandedGroupId, setExpandedGroupId] = useState(null);
   const [logs, setLogs] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortField, setSortField] = useState("");
+  const [sortAsc, setSortAsc] = useState(true);
 
   useEffect(() => {
     fetch("https://wims-w48m.onrender.com/api/warehouses", {
@@ -28,17 +30,33 @@ const AdminProductMasterlist = () => {
     fetch(url, { credentials: "include" })
       .then((res) => res.json())
       .then((data) => {
-        const filtered = data.filter(
+        let filtered = data.filter(
           (p) =>
             p.units > 0 &&
             warehouses.includes(p.warehouse) &&
             (searchTerm.trim() === "" ||
-              p.item.toLowerCase().includes(searchTerm.trim().toLowerCase()))
+              p.item.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              p.groupId.toLowerCase().includes(searchTerm.toLowerCase()))
         );
+
+        if (sortField) {
+          filtered.sort((a, b) => {
+            const valA = a[sortField];
+            const valB = b[sortField];
+            if (sortField === "units") {
+              return sortAsc ? valA - valB : valB - valA;
+            } else {
+              return sortAsc
+                ? valA.localeCompare(valB)
+                : valB.localeCompare(valA);
+            }
+          });
+        }
+
         setProducts(filtered);
       })
       .catch((err) => console.error("Failed to load products", err));
-  }, [selectedWarehouse, warehouses, searchTerm]);
+  }, [selectedWarehouse, warehouses, searchTerm, sortField, sortAsc]);
 
   const toggleExpand = async (groupId) => {
     if (expandedGroupId === groupId) {
@@ -57,6 +75,15 @@ const AdminProductMasterlist = () => {
         }
       }
       setExpandedGroupId(groupId);
+    }
+  };
+
+  const toggleSort = (field) => {
+    if (sortField === field) {
+      setSortAsc(!sortAsc);
+    } else {
+      setSortField(field);
+      setSortAsc(true);
     }
   };
 
@@ -81,7 +108,7 @@ const AdminProductMasterlist = () => {
         <div className="search-container">
           <input
             type="text"
-            placeholder="Search Item Name..."
+            placeholder="Search Item or Group ID..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -95,11 +122,19 @@ const AdminProductMasterlist = () => {
         <thead>
           <tr>
             <th></th>
-            <th>Group ID</th>
-            <th>Item</th>
+            <th onClick={() => toggleSort("groupId")}>
+              Group ID {sortField === "groupId" && (sortAsc ? <FaSortAlphaDown /> : <FaSortAlphaUp />)}
+            </th>
+            <th onClick={() => toggleSort("item")}>
+              Item {sortField === "item" && (sortAsc ? <FaSortAlphaDown /> : <FaSortAlphaUp />)}
+            </th>
             <th>Warehouse</th>
-            <th>Location</th>
-            <th>Units</th>
+            <th onClick={() => toggleSort("currentLocation")}>
+              Location {sortField === "currentLocation" && (sortAsc ? <FaSortAlphaDown /> : <FaSortAlphaUp />)}
+            </th>
+            <th onClick={() => toggleSort("units")}>
+              Units {sortField === "units" && (sortAsc ? <FaSortAlphaDown /> : <FaSortAlphaUp />)}
+            </th>
           </tr>
         </thead>
         <tbody>
