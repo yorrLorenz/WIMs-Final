@@ -1,7 +1,7 @@
 package com.wims.model;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,9 +14,9 @@ public class Log {
     private Long id;
 
     @Column(name = "date_time")
-    private LocalDateTime dateTime;
+    private Instant dateTime;
 
-    @Column(name = "user_id") 
+    @Column(name = "user_id")
     private Long userId;
 
     @Column(name = "username")
@@ -49,17 +49,15 @@ public class Log {
     @Transient
     private List<Log> relatedLogs;
 
-   
-
     public Long getId() {
         return id;
     }
 
-    public LocalDateTime getDateTime() {
+    public Instant getDateTime() {
         return dateTime;
     }
 
-    public void setDateTime(LocalDateTime dateTime) {
+    public void setDateTime(Instant dateTime) {
         this.dateTime = dateTime;
     }
 
@@ -152,7 +150,13 @@ public class Log {
     }
 
     @PrePersist
-    public void generateGroupIdIfRestocked() {
+    public void beforePersist() {
+        // Set timestamp in UTC if not set
+        if (this.dateTime == null) {
+            this.dateTime = Instant.now();
+        }
+
+        // Generate group ID if restocked and not present
         if ("Restocked".equalsIgnoreCase(action) && (groupId == null || groupId.isBlank())) {
             this.groupId = UUID.randomUUID().toString();
         }

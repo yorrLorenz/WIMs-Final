@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -41,11 +42,11 @@ public class ProductController {
         Warehouse warehouse = warehouseOpt.get();
 
         Log log = new Log();
-        log.setUserId(user.getId()); 
-        log.setUsername(user.getUsername()); 
+        log.setUserId(user.getId());
+        log.setUsername(user.getUsername());
         log.setAction(request.getAction());
         log.setWarehouse(request.getWarehouse());
-        log.setDateTime(LocalDateTime.now());
+        log.setDateTime(Instant.now());  // ✅ UTC timestamp
 
         if ("Restocked".equalsIgnoreCase(request.getAction())) {
             String groupId = generateCustomGroupId(warehouse);
@@ -143,7 +144,7 @@ public class ProductController {
                 originalLog.setItem(original.getItem());
                 originalLog.setLocation(oldLocation);
                 originalLog.setUnits(original.getUnits());
-                originalLog.setDateTime(LocalDateTime.now());
+                originalLog.setDateTime(Instant.now());  // ✅ Corrected
                 originalLog.setPreviousLocation(oldLocation);
                 logRepository.save(originalLog);
 
@@ -218,13 +219,12 @@ public class ProductController {
     }
 
     @GetMapping("/all")
-public ResponseEntity<List<Product>> getAllProducts() {
-    return ResponseEntity.ok(productRepository.findAll());
-}
+    public ResponseEntity<List<Product>> getAllProducts() {
+        return ResponseEntity.ok(productRepository.findAll());
+    }
 
-@GetMapping("/by-warehouse")
-public ResponseEntity<List<Product>> getByWarehouse(@RequestParam String name) {
-    return ResponseEntity.ok(productRepository.findByWarehouse(name));
-}
-
+    @GetMapping("/by-warehouse")
+    public ResponseEntity<List<Product>> getByWarehouse(@RequestParam String name) {
+        return ResponseEntity.ok(productRepository.findByWarehouse(name));
+    }
 }

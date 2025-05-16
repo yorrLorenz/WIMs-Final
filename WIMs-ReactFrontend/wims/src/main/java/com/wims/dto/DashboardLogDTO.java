@@ -1,11 +1,11 @@
 package com.wims.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 public class DashboardLogDTO {
     private Long id;
-    private LocalDateTime dateTime;
+    private Instant dateTime;  // ✅ use Instant for accuracy
     private String username;
     private String action;
     private String item;
@@ -18,7 +18,7 @@ public class DashboardLogDTO {
     private List<DashboardLogDTO> relatedLogs;
 
     public DashboardLogDTO(Long id,
-                           LocalDateTime dateTime,
+                           Instant dateTime,
                            String username,
                            String action,
                            String item,
@@ -41,9 +41,8 @@ public class DashboardLogDTO {
         this.previousLocation = previousLocation;
     }
 
-   
     public Long getId() { return id; }
-    public LocalDateTime getDateTime() { return dateTime; }
+    public Instant getDateTime() { return dateTime; }
     public String getUsername() { return username; }
     public String getAction() { return action; }
     public String getItem() { return item; }

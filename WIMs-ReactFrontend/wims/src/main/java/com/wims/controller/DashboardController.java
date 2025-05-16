@@ -14,7 +14,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -31,27 +31,24 @@ public class DashboardController {
     }
 
     @GetMapping("/warehouse/{warehouseId}")
-public String warehouseDashboard(@PathVariable String warehouseId, Model model) {
-    Optional<Warehouse> warehouseOpt = warehouseRepository.findByName(URLDecoder.decode(warehouseId, StandardCharsets.UTF_8));
-    if (warehouseOpt.isEmpty()) return "redirect:/location-selection";
+    public String warehouseDashboard(@PathVariable String warehouseId, Model model) {
+        Optional<Warehouse> warehouseOpt = warehouseRepository.findByName(URLDecoder.decode(warehouseId, StandardCharsets.UTF_8));
+        if (warehouseOpt.isEmpty()) return "redirect:/location-selection";
 
-    Warehouse warehouse = warehouseOpt.get();
-    List<Log> logs = logRepository.findByWarehouseOrderByDateTimeDesc(warehouse.getName());
+        Warehouse warehouse = warehouseOpt.get();
+        List<Log> logs = logRepository.findByWarehouseOrderByDateTimeDesc(warehouse.getName());
 
-    for (Log log : logs) {
-        if (log.getGroupId() != null) {
-            log.setRelatedLogs(logRepository.findByGroupIdOrderByDateTimeDesc(log.getGroupId()));
+        for (Log log : logs) {
+            if (log.getGroupId() != null) {
+                log.setRelatedLogs(logRepository.findByGroupIdOrderByDateTimeDesc(log.getGroupId()));
+            }
         }
+
+        model.addAttribute("warehouse", warehouse);
+        model.addAttribute("logs", logs);
+        return "dashboard";
     }
 
-    model.addAttribute("warehouse", warehouse);
-    model.addAttribute("logs", logs);
-    return "dashboard";
-}
-
-    
-
-   
     @GetMapping("/warehouse/{warehouseId}/products/add")
     public String showAddProductForm(@PathVariable String warehouseId, Model model, Principal principal) {
         String decodedName = URLDecoder.decode(warehouseId, StandardCharsets.UTF_8);
@@ -68,7 +65,6 @@ public String warehouseDashboard(@PathVariable String warehouseId, Model model) 
         return "add-product";
     }
 
-   
     @PostMapping("/warehouse/{warehouseId}/products/add")
     public String handleAddProduct(@PathVariable String warehouseId,
                                    @ModelAttribute LogForm logForm,
@@ -83,27 +79,23 @@ public String warehouseDashboard(@PathVariable String warehouseId, Model model) 
         Warehouse warehouse = optionalWarehouse.get();
 
         Log log = new Log();
-        log.setDateTime(LocalDateTime.now());
+        log.setDateTime(Instant.now());  // ✅ Store accurate UTC time
         log.setUsername(principal.getName());
         log.setAction(logForm.getAction());
         log.setItem(logForm.getItem());
         log.setWarehouse(warehouse.getName());
         log.setLocation(logForm.getWarehouseLocation());
-        log.setGroupId(logForm.getGroupId()); 
+        log.setGroupId(logForm.getGroupId());
 
         logRepository.save(log);
 
         return "redirect:/warehouse/" + URLEncoder.encode(decodedName, StandardCharsets.UTF_8);
     }
 
-  
     @GetMapping("/admin/dashboard")
     public String adminDashboard(Model model) {
         List<Log> allLogs = logRepository.findAllByOrderByDateTimeDesc();
         model.addAttribute("logs", allLogs);
         return "admin-dashboard";
     }
-  
-
-
 }

@@ -10,13 +10,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.nio.charset.StandardCharsets;
 import java.net.URLDecoder;
-import java.security.Principal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/logs")
-
 public class LogRestController {
 
     @Autowired
@@ -26,19 +24,18 @@ public class LogRestController {
     private WarehouseRepository warehouseRepository;
 
     @PostMapping("/warehouse/{warehouseId}/add")
-public ResponseEntity<String> addLog(@PathVariable String warehouseId, @RequestBody Log log) {
-    String decodedWarehouseName = URLDecoder.decode(warehouseId, StandardCharsets.UTF_8);
-    Optional<Warehouse> optionalWarehouse = warehouseRepository.findByName(decodedWarehouseName);
+    public ResponseEntity<String> addLog(@PathVariable String warehouseId, @RequestBody Log log) {
+        String decodedWarehouseName = URLDecoder.decode(warehouseId, StandardCharsets.UTF_8);
+        Optional<Warehouse> optionalWarehouse = warehouseRepository.findByName(decodedWarehouseName);
 
-    if (optionalWarehouse.isEmpty()) {
-        return ResponseEntity.badRequest().body("Warehouse not found");
+        if (optionalWarehouse.isEmpty()) {
+            return ResponseEntity.badRequest().body("Warehouse not found");
+        }
+
+        log.setWarehouse(decodedWarehouseName);
+        log.setDateTime(Instant.now());  // ✅ Use Instant for correct UTC timestamp
+        logRepository.save(log);
+
+        return ResponseEntity.ok("Log saved");
     }
-
-    log.setWarehouse(decodedWarehouseName);
-    log.setDateTime(LocalDateTime.now());
-    logRepository.save(log);
-
-    return ResponseEntity.ok("Log saved");
-}
-
 }

@@ -15,8 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -35,32 +34,32 @@ public class AccountApiController {
     @GetMapping("/me")
     public ResponseEntity<User> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
         User user = userRepository.findByUsername(userDetails.getUsername())
-            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         return ResponseEntity.ok(user);
     }
 
     @GetMapping("/my-logs")
     public ResponseEntity<List<DashboardLogDTO>> getCurrentUserLogs(@AuthenticationPrincipal UserDetails userDetails) {
         User user = userRepository.findByUsername(userDetails.getUsername())
-            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         List<Log> logs = logRepository.findByUserIdOrderByDateTimeDesc(user.getId());
 
         List<DashboardLogDTO> dtos = logs.stream()
-            .map(log -> new DashboardLogDTO(
-                log.getId(),
-                log.getDateTime(),
-                log.getUsername(),
-                log.getAction(),
-                log.getItem(),
-                log.getWarehouse(),
-                log.getLocation(),
-                log.getGroupId(),
-                log.getUnits(),
-                log.getRemainingUnits(),
-                log.getPreviousLocation()
-            ))
-            .collect(Collectors.toList());
+                .map(log -> new DashboardLogDTO(
+                        log.getId(),
+                        log.getDateTime(),
+                        log.getUsername(),
+                        log.getAction(),
+                        log.getItem(),
+                        log.getWarehouse(),
+                        log.getLocation(),
+                        log.getGroupId(),
+                        log.getUnits(),
+                        log.getRemainingUnits(),
+                        log.getPreviousLocation()
+                ))
+                .collect(Collectors.toList());
 
         return ResponseEntity.ok(dtos);
     }
@@ -68,26 +67,26 @@ public class AccountApiController {
     @GetMapping("/dashboard-by-date")
     public DashboardResponseDTO getLogsByDateForAdmin(@RequestParam("date") String date) {
         LocalDate parsedDate = LocalDate.parse(date);
-        LocalDateTime start = parsedDate.atStartOfDay();
-        LocalDateTime end = parsedDate.atTime(23, 59, 59);
+        Instant start = parsedDate.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant end = parsedDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant().minusSeconds(1);
 
         List<Log> logs = logRepository.findByDateTimeBetweenOrderByDateTimeDesc(start, end);
 
         List<DashboardLogDTO> dtos = logs.stream()
-            .map(log -> new DashboardLogDTO(
-                log.getId(),
-                log.getDateTime(),
-                log.getUsername(),
-                log.getAction(),
-                log.getItem(),
-                log.getWarehouse(),
-                log.getLocation(),
-                log.getGroupId(),
-                log.getUnits(),
-                log.getRemainingUnits(),
-                log.getPreviousLocation()
-            ))
-            .collect(Collectors.toList());
+                .map(log -> new DashboardLogDTO(
+                        log.getId(),
+                        log.getDateTime(),
+                        log.getUsername(),
+                        log.getAction(),
+                        log.getItem(),
+                        log.getWarehouse(),
+                        log.getLocation(),
+                        log.getGroupId(),
+                        log.getUnits(),
+                        log.getRemainingUnits(),
+                        log.getPreviousLocation()
+                ))
+                .collect(Collectors.toList());
 
         return new DashboardResponseDTO("All Warehouses", dtos);
     }
@@ -109,7 +108,7 @@ public class AccountApiController {
 
         if (targetUser.get().getUsername().equals(currentUsername)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body("You cannot delete your own account.");
+                    .body("You cannot delete your own account.");
         }
 
         userRepository.deleteById(id);
@@ -117,26 +116,25 @@ public class AccountApiController {
     }
 
     @GetMapping("/logs/by-userid/{userId}")
-public ResponseEntity<List<DashboardLogDTO>> getLogsByUserId(@PathVariable Long userId) {
-    List<Log> logs = logRepository.findByUserIdOrderByDateTimeDesc(userId);
+    public ResponseEntity<List<DashboardLogDTO>> getLogsByUserId(@PathVariable Long userId) {
+        List<Log> logs = logRepository.findByUserIdOrderByDateTimeDesc(userId);
 
-    List<DashboardLogDTO> dtos = logs.stream()
-        .map(log -> new DashboardLogDTO(
-            log.getId(),
-            log.getDateTime(),
-            log.getUsername(),
-            log.getAction(),
-            log.getItem(),
-            log.getWarehouse(),
-            log.getLocation(),
-            log.getGroupId(),
-            log.getUnits(),
-            log.getRemainingUnits(),
-            log.getPreviousLocation()
-        ))
-        .collect(Collectors.toList());
+        List<DashboardLogDTO> dtos = logs.stream()
+                .map(log -> new DashboardLogDTO(
+                        log.getId(),
+                        log.getDateTime(),
+                        log.getUsername(),
+                        log.getAction(),
+                        log.getItem(),
+                        log.getWarehouse(),
+                        log.getLocation(),
+                        log.getGroupId(),
+                        log.getUnits(),
+                        log.getRemainingUnits(),
+                        log.getPreviousLocation()
+                ))
+                .collect(Collectors.toList());
 
-    return ResponseEntity.ok(dtos);
-}
-
+        return ResponseEntity.ok(dtos);
+    }
 }

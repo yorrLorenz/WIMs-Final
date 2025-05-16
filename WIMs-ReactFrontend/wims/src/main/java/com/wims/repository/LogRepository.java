@@ -5,6 +5,7 @@ import com.wims.model.Product;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -33,4 +34,6 @@ public interface LogRepository extends JpaRepository<Log, Long> {
 List<Product> findByWarehouse(String warehouse);
 
     int countByGroupIdStartingWith(String prefix);
+    List<Log> findByDateTimeBetweenOrderByDateTimeDesc(Instant start, Instant end);
+
 }
