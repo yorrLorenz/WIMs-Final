@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { FaUserCircle, FaRegCopy, FaSortAlphaDown, FaSortAlphaUp } from "react-icons/fa";
 import { toast } from "react-toastify";
 import "./AccountInfo.css";
+import { FaSortUp, FaSortDown } from "react-icons/fa";
+
 
 const AccountInfo = () => {
   const [user, setUser] = useState(null);

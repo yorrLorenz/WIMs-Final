@@ -12,6 +12,13 @@ import {
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 import "./CalendarPage.css";
+import { FaSortUp, FaSortDown } from "react-icons/fa";
+
+
+const renderSortIcon = (field) => {
+  if (sortField !== field) return null;
+  return sortAsc ? <FaSortUp /> : <FaSortDown />;
+};
 
 const CalendarPage = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -166,12 +173,12 @@ const CalendarPage = () => {
         <table>
           <thead>
             <tr>
-              <th onClick={() => toggleSort("dateTime")}>Time</th>
-              <th onClick={() => toggleSort("username")}>User</th>
-              <th onClick={() => toggleSort("action")}>Action</th>
-              <th onClick={() => toggleSort("item")}>Item</th>
+              <th onClick={() => toggleSort("dateTime")}>Time{renderSortIcon("dateTime")}</th>
+              <th onClick={() => toggleSort("username")}>User{renderSortIcon("username")}</th>
+              <th onClick={() => toggleSort("action")}>Action{renderSortIcon("action")}</th>
+              <th onClick={() => toggleSort("item")}>Item{renderSortIcon("item")}</th>
               <th>Details</th>
-              {isAdmin && <th onClick={() => toggleSort("warehouse")}>Warehouse</th>}
+              {isAdmin && <th onClick={() => toggleSort("warehouse")}>Warehouse{renderSortIcon("warehouse")}</th>}
             </tr>
           </thead>
           <tbody>
