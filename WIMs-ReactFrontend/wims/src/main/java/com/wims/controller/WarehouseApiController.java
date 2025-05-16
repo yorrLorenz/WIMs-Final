@@ -91,12 +91,13 @@ public ResponseEntity<?> deleteWarehouse(@PathVariable Long id) {
     List<User> assignedUsers = userRepository.findByWarehouse(warehouse.getName());
     if (!assignedUsers.isEmpty()) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-            .body("Cannot delete warehouse assigned to users.");
+                .body("Cannot delete warehouse assigned to users.");
     }
 
     warehouseRepository.deleteById(id);
     return ResponseEntity.ok("Warehouse deleted successfully");
 }
+
 
 
 
