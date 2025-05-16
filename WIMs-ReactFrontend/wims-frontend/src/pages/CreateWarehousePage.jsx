@@ -7,7 +7,6 @@ import "./CreateWarehousePage.css";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
@@ -18,6 +17,11 @@ L.Icon.Default.mergeOptions({
 const LocationSelector = ({ onLocationSelect }) => {
   useMapEvents({
     click(e) {
+      const { lat, lng } = e.latlng;
+
+      // ✅ Only allow clicks within valid Earth bounds
+      if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return;
+
       onLocationSelect(e.latlng);
     },
   });
@@ -27,7 +31,7 @@ const LocationSelector = ({ onLocationSelect }) => {
 const CreateWarehousePage = () => {
   const [warehouseName, setWarehouseName] = useState("");
   const [location, setLocation] = useState(null);
-  const [isLoading, setIsLoading] = useState(false); 
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -52,7 +56,7 @@ const CreateWarehousePage = () => {
     };
 
     try {
-      setIsLoading(true); 
+      setIsLoading(true);
       const res = await fetch("https://wims-w48m.onrender.com/api/warehouses", {
         method: "POST",
         credentials: "include",
@@ -74,7 +78,7 @@ const CreateWarehousePage = () => {
       console.error(err);
       toast.error("Network error.");
     } finally {
-      setIsLoading(false); 
+      setIsLoading(false);
     }
   };
 
@@ -83,10 +87,14 @@ const CreateWarehousePage = () => {
       <h2 className="simple-title">Create Warehouse</h2>
 
       <div className="simple-map">
-         <MapContainer center={[12.8797, 121.774]} zoom={5.5} style={{ height: "100%", width: "100%" }}
+        <MapContainer
+          center={[12.8797, 121.774]}
+          zoom={5.5}
+          style={{ height: "100%", width: "100%" }}
           worldCopyJump={false}
           maxBounds={[[-90, -180], [90, 180]]}
-          maxBoundsViscosity={1.0}>
+          maxBoundsViscosity={1.0}
+        >
           <TileLayer
             attribution='&copy; OpenStreetMap contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
