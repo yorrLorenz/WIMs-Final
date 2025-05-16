@@ -3,8 +3,8 @@ import DashboardLayout from "../layouts/DashboardLayout";
 import { useParams } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import SockJS from "sockjs-client";
-import { FaSortUp, FaSortDown } from "react-icons/fa";
 import { Client } from "@stomp/stompjs";
+import { FaSortUp, FaSortDown } from "react-icons/fa";
 import "react-toastify/dist/ReactToastify.css";
 import "./WarehouseDashboard.css";
 
@@ -14,13 +14,18 @@ const WarehouseDashboard = () => {
   const [expanded, setExpanded] = useState({});
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showAll, setShowAll] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [sortField, setSortField] = useState("dateTime");
   const [sortAsc, setSortAsc] = useState(false);
 
-  const renderSortIcon = (field) => {
-    if (sortField !== field) return null;
-    return sortAsc ? <FaSortUp /> : <FaSortDown />;
-  };
+  const [formData, setFormData] = useState({
+    action: "Restocked",
+    item: "",
+    location: "",
+    groupId: "",
+    units: 1,
+  });
 
   useEffect(() => {
     fetchLogs();
@@ -81,6 +86,11 @@ const WarehouseDashboard = () => {
     }
   };
 
+  const renderSortIcon = (field) => {
+    if (sortField !== field) return null;
+    return sortAsc ? <FaSortUp /> : <FaSortDown />;
+  };
+
   const getSortedLogs = () => {
     const sorted = [...logs].sort((a, b) => {
       let valA = a[sortField];
@@ -105,6 +115,59 @@ const WarehouseDashboard = () => {
     return showAll ? sorted : sorted.slice(0, 10);
   };
 
+  const getModalTitle = () => {
+    switch (formData.action) {
+      case "Restocked": return "Add Product";
+      case "Removed": return "Remove Product";
+      case "Move": return "Move Product";
+      default: return "Transaction";
+    }
+  };
+
+  const validateForm = () => {
+    if (formData.action === "Restocked")
+      return formData.item && formData.location && formData.units > 0;
+    if (formData.action === "Removed")
+      return formData.groupId && formData.units > 0;
+    if (formData.action === "Move")
+      return formData.groupId && formData.location && formData.units > 0;
+    return true;
+  };
+
+  const handleSubmit = async () => {
+    if (isSubmitting || !validateForm()) {
+      toast.error("Please complete all required fields.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const username = localStorage.getItem("username");
+      const payload = { ...formData, warehouse: warehouseId, username };
+
+      const res = await fetch("https://wims-w48m.onrender.com/api/products/add", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        setShowAddModal(false);
+        setFormData({ action: "Restocked", item: "", location: "", groupId: "", units: 1 });
+        toast.success("Transaction added!");
+      } else {
+        const text = await res.text();
+        toast.error("Failed to add: " + text);
+      }
+    } catch {
+      toast.error("Network error.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="dashboard-container">
@@ -113,6 +176,7 @@ const WarehouseDashboard = () => {
           <div className="center">
             {currentTime.toLocaleDateString()} • {currentTime.toLocaleTimeString()}
           </div>
+          <button className="add-product-btn" onClick={() => setShowAddModal(true)}>+</button>
         </div>
 
         <div className="content">
@@ -177,12 +241,115 @@ const WarehouseDashboard = () => {
 
           {logs.length > 10 && (
             <div style={{ textAlign: "center", marginTop: "1rem" }}>
-              <button onClick={() => setShowAll((prev) => !prev)} className="brown-btn">
+              <button className="brown-btn" onClick={() => setShowAll((prev) => !prev)}>
                 {showAll ? "Show Less" : "Show All"}
               </button>
             </div>
           )}
         </div>
+
+        {showAddModal && (
+          <div className="modal">
+            <div className="modal-content">
+              <h3>{getModalTitle()}</h3>
+
+              <label>Action:</label>
+              <select
+                value={formData.action}
+                onChange={(e) => setFormData({ ...formData, action: e.target.value })}
+              >
+                <option value="Restocked">Restock</option>
+                <option value="Removed">Remove</option>
+                <option value="Move">Move</option>
+              </select>
+
+              {formData.action === "Restocked" && (
+                <>
+                  <label>Item:</label>
+                  <input value={formData.item} onChange={(e) => setFormData({ ...formData, item: e.target.value })} />
+                  <label>Location:</label>
+                  <input value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
+                  <label>Units:</label>
+                  <input type="number" min="1" value={formData.units} onChange={(e) => setFormData({ ...formData, units: parseInt(e.target.value) || 1 })} />
+                </>
+              )}
+
+              {(formData.action === "Removed" || formData.action === "Move") && (
+                <>
+                  <label>Group ID:</label>
+                  <input
+                    value={formData.groupId}
+                    onChange={async (e) => {
+                      const groupId = e.target.value.trim();
+                      setFormData((prev) => ({ ...prev, groupId }));
+
+                      if (!groupId) {
+                        toast.error("Group ID cannot be empty");
+                        return;
+                      }
+
+                      try {
+                        const res = await fetch(`https://wims-w48m.onrender.com/api/logs/group/${groupId}`, {
+                          method: "GET",
+                          credentials: "include",
+                        });
+                        const result = await res.json();
+                        const logs = Array.isArray(result) ? result : [result];
+
+                        if (!res.ok || !logs.length) {
+                          toast.error("Invalid Group ID");
+                          return;
+                        }
+
+                        logs.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
+                        const latestValid = logs.find((log) => log.action !== "Removed");
+                        if (!latestValid) {
+                          toast.error("All units already removed for this Group ID.");
+                          return;
+                        }
+
+                        const maxUnits = latestValid.units || 1;
+                        setFormData((prev) => ({
+                          ...prev,
+                          item: latestValid.item.split(" (")[0],
+                          location: prev.action === "Removed" ? latestValid.location : "",
+                          units: maxUnits,
+                        }));
+                      } catch (err) {
+                        toast.error("Failed to fetch logs");
+                      }
+                    }}
+                  />
+                  <label>Item:</label>
+                  <input value={formData.item} readOnly />
+
+                  {formData.action === "Removed" && (
+                    <>
+                      <label>Units to Remove:</label>
+                      <input type="number" min="1" value={formData.units} onChange={(e) => setFormData({ ...formData, units: parseInt(e.target.value) || 1 })} />
+                    </>
+                  )}
+
+                  {formData.action === "Move" && (
+                    <>
+                      <label>New Location:</label>
+                      <input value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
+                      <label>Units to Move:</label>
+                      <input type="number" min="1" value={formData.units} onChange={(e) => setFormData({ ...formData, units: parseInt(e.target.value) || 1 })} />
+                    </>
+                  )}
+                </>
+              )}
+
+              <button onClick={handleSubmit} disabled={isSubmitting}>
+                {isSubmitting ? "Submitting..." : "Submit"}
+              </button>
+              <button onClick={() => setShowAddModal(false)} disabled={isSubmitting}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
 
         <ToastContainer position="bottom-right" autoClose={3000} />
       </div>
