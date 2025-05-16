@@ -125,7 +125,7 @@ const WarehouseSelectionPage = () => {
       <h2 className="page-title">Select Warehouse</h2>
 
       <div className="map-container">
-        <MapContainer center={[12.8797, 121.774]} zoom={5.5} style={{ height: "500px", width: "100%" }}
+        <MapContainer center={[12.8797, 121.774]} zoom={5.5} style={{ height: "100%", width: "100%" }}
   worldCopyJump={false}
   maxBounds={[[-90, -180], [90, 180]]}
   maxBoundsViscosity={1.0}>

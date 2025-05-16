@@ -83,7 +83,10 @@ const CreateWarehousePage = () => {
       <h2 className="simple-title">Create Warehouse</h2>
 
       <div className="simple-map">
-        <MapContainer center={[12.8797, 121.774]} zoom={6} style={{ height: "100%", width: "100%" }}>
+         <MapContainer center={[12.8797, 121.774]} zoom={5.5} style={{ height: "100%", width: "100%" }}
+          worldCopyJump={false}
+          maxBounds={[[-90, -180], [90, 180]]}
+          maxBoundsViscosity={1.0}>
           <TileLayer
             attribution='&copy; OpenStreetMap contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
