@@ -57,7 +57,7 @@ const AdminDashboard = () => {
     setExpanded((prev) => ({ ...prev, [logId]: !prev[logId] }));
   };
 
-  const formatDate = (dateTimeStr) => new Date(dateTimeStr).toLocaleString();
+  const formatDate = (dateTimeStr) => new Date(dateTimeStr).toLocaleString("en-PH", { timeZone: "Asia/Manila" });
 
   const toggleSort = (field) => {
     if (sortField === field) {

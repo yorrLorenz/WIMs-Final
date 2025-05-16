@@ -131,7 +131,7 @@ const AccountInfo = () => {
             {getSortedLogs().length > 0 ? (
               getSortedLogs().map((log, index) => (
                 <tr key={index}>
-                  <td>{new Date(log.dateTime).toLocaleString()}</td>
+                  <td>{new Date(log.dateTime).toLocaleString("en-PH", { timeZone: "Asia/Manila" })}</td>
                   <td className={log.action.toLowerCase()}>{log.action}</td>
                   <td>{log.item?.split(" (")[0]}</td>
                   <td>{log.warehouse}</td>

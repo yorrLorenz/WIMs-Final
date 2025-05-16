@@ -202,7 +202,7 @@ const WarehouseDashboard = () => {
                         <button className="toggle-btn" onClick={() => toggleExpand(log.id)}>☰</button>
                       )}
                     </td>
-                    <td>{new Date(log.dateTime).toLocaleString()}</td>
+                    <td>{new Date(log.dateTime).toLocaleString("en-PH", { timeZone: "Asia/Manila" })}</td>
                     <td>{log.username}</td>
                     <td className={`action-cell ${log.action.toLowerCase()}`}>{log.action}</td>
                     <td>{log.item?.split(" (")[0] || "—"}</td>
@@ -218,7 +218,7 @@ const WarehouseDashboard = () => {
                             {log.relatedLogs?.length ? (
                               log.relatedLogs.map((rLog) => (
                                 <li key={rLog.id}>
-                                  {new Date(rLog.dateTime).toLocaleString()} - {rLog.action} by {rLog.username}
+                                  {new Date(rLog.dateTime).toLocaleString("en-PH", { timeZone: "Asia/Manila" })} - {rLog.action} by {rLog.username}
                                   {rLog.action === "Move"
                                     ? ` (${rLog.units} units moved from ${rLog.previousLocation ?? "?"} → ${rLog.location}${rLog.groupId !== log.groupId ? `, New ID: ${rLog.groupId}` : ""})`
                                     : rLog.action === "Removed"

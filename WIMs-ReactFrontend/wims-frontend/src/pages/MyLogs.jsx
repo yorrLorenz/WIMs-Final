@@ -27,7 +27,7 @@ const MyLogs = () => {
               key={log.id}
               className="border rounded p-3 shadow-sm bg-white"
             >
-              <p><strong>Date:</strong> {new Date(log.dateTime).toLocaleString()}</p>
+              <p><strong>Date:</strong> {new Date(log.dateTime).toLocaleString("en-PH", { timeZone: "Asia/Manila" })}</p>
               <p><strong>Item:</strong> {log.item}</p>
               <p><strong>Action:</strong> {log.action}</p>
               <p><strong>Location:</strong> {log.location}</p>

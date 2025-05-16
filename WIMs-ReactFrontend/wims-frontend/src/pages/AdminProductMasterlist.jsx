@@ -162,7 +162,7 @@ const AdminProductMasterlist = () => {
                       {logs[p.groupId].map((log) => (
                         <li key={log.id}>
                           {log.action} {log.units} unit(s) on{" "}
-                          {new Date(log.dateTime).toLocaleString()} by{" "}
+                          {new Date(log.dateTime).toLocaleString("en-PH", { timeZone: "Asia/Manila" })} by{" "}
                           {log.username}
                         </li>
                       ))}
