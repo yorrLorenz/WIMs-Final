@@ -11,14 +11,8 @@ import {
 } from "date-fns";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
-import "./CalendarPage.css";
 import { FaSortUp, FaSortDown } from "react-icons/fa";
-
-
-const renderSortIcon = (field) => {
-  if (sortField !== field) return null;
-  return sortAsc ? <FaSortUp /> : <FaSortDown />;
-};
+import "./CalendarPage.css";
 
 const CalendarPage = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -30,6 +24,11 @@ const CalendarPage = () => {
   const [sortAsc, setSortAsc] = useState(false);
 
   const isAdmin = new URLSearchParams(window.location.search).get("admin") === "true";
+
+  const renderSortIcon = (field) => {
+    if (sortField !== field) return null;
+    return sortAsc ? <FaSortUp /> : <FaSortDown />;
+  };
 
   const days = eachDayOfInterval({
     start: startOfMonth(currentMonth),
@@ -54,9 +53,7 @@ const CalendarPage = () => {
 
     const url = isAdmin
       ? `https://wims-w48m.onrender.com/api/accounts/dashboard-by-date?date=${formattedDate}`
-      : `https://wims-w48m.onrender.com/api/dashboard-by-date?date=${formattedDate}&warehouse=${encodeURIComponent(
-          warehouse
-        )}`;
+      : `https://wims-w48m.onrender.com/api/dashboard-by-date?date=${formattedDate}&warehouse=${encodeURIComponent(warehouse)}`;
 
     fetch(url, { credentials: "include" })
       .then((res) => res.json())
@@ -173,12 +170,14 @@ const CalendarPage = () => {
         <table>
           <thead>
             <tr>
-              <th onClick={() => toggleSort("dateTime")}>Time{renderSortIcon("dateTime")}</th>
-              <th onClick={() => toggleSort("username")}>User{renderSortIcon("username")}</th>
-              <th onClick={() => toggleSort("action")}>Action{renderSortIcon("action")}</th>
-              <th onClick={() => toggleSort("item")}>Item{renderSortIcon("item")}</th>
+              <th onClick={() => toggleSort("dateTime")}>Time {renderSortIcon("dateTime")}</th>
+              <th onClick={() => toggleSort("username")}>User {renderSortIcon("username")}</th>
+              <th onClick={() => toggleSort("action")}>Action {renderSortIcon("action")}</th>
+              <th onClick={() => toggleSort("item")}>Item {renderSortIcon("item")}</th>
               <th>Details</th>
-              {isAdmin && <th onClick={() => toggleSort("warehouse")}>Warehouse{renderSortIcon("warehouse")}</th>}
+              {isAdmin && (
+                <th onClick={() => toggleSort("warehouse")}>Warehouse {renderSortIcon("warehouse")}</th>
+              )}
             </tr>
           </thead>
           <tbody>

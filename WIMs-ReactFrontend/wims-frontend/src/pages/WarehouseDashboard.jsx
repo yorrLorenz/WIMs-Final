@@ -8,13 +8,6 @@ import { Client } from "@stomp/stompjs";
 import "react-toastify/dist/ReactToastify.css";
 import "./WarehouseDashboard.css";
 
-
-const renderSortIcon = (field) => {
-  if (sortField !== field) return null;
-  return sortAsc ? <FaSortUp /> : <FaSortDown />;
-};
-
-
 const WarehouseDashboard = () => {
   const { warehouseId } = useParams();
   const [logs, setLogs] = useState([]);
@@ -23,6 +16,11 @@ const WarehouseDashboard = () => {
   const [showAll, setShowAll] = useState(false);
   const [sortField, setSortField] = useState("dateTime");
   const [sortAsc, setSortAsc] = useState(false);
+
+  const renderSortIcon = (field) => {
+    if (sortField !== field) return null;
+    return sortAsc ? <FaSortUp /> : <FaSortDown />;
+  };
 
   useEffect(() => {
     fetchLogs();
@@ -123,12 +121,12 @@ const WarehouseDashboard = () => {
             <thead>
               <tr>
                 <th></th>
-                <th onClick={() => toggleSort("dateTime")}> Date{renderSortIcon("dateTime")}</th>
-                <th onClick={() => toggleSort("username")}> User{renderSortIcon("username")}</th>
-                <th onClick={() => toggleSort("action")}> Action{renderSortIcon("action")}</th>
-                <th onClick={() => toggleSort("item")}> Item{renderSortIcon("item")}</th>
-                <th onClick={() => toggleSort("location")}> Location{renderSortIcon("location")}</th>
-                <th onClick={() => toggleSort("units")}> Units{renderSortIcon("units")}</th>
+                <th onClick={() => toggleSort("dateTime")}>Date {renderSortIcon("dateTime")}</th>
+                <th onClick={() => toggleSort("username")}>User {renderSortIcon("username")}</th>
+                <th onClick={() => toggleSort("action")}>Action {renderSortIcon("action")}</th>
+                <th onClick={() => toggleSort("item")}>Item {renderSortIcon("item")}</th>
+                <th onClick={() => toggleSort("location")}>Location {renderSortIcon("location")}</th>
+                <th onClick={() => toggleSort("units")}>Units {renderSortIcon("units")}</th>
               </tr>
             </thead>
             <tbody>

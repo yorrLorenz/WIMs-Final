@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { FaUserCircle, FaRegCopy, FaSortAlphaDown, FaSortAlphaUp } from "react-icons/fa";
+import { FaUserCircle, FaRegCopy, FaSortUp, FaSortDown } from "react-icons/fa";
 import { toast } from "react-toastify";
 import "./AccountInfo.css";
-import { FaSortUp, FaSortDown } from "react-icons/fa";
-
 
 const AccountInfo = () => {
   const [user, setUser] = useState(null);
@@ -115,16 +113,16 @@ const AccountInfo = () => {
           <thead>
             <tr>
               <th onClick={() => toggleSort("dateTime")}>
-                Date {sortField === "dateTime" && (sortAsc ? <FaSortAlphaDown /> : <FaSortAlphaUp />)}
+                Date {sortField === "dateTime" && (sortAsc ? <FaSortUp /> : <FaSortDown />)}
               </th>
               <th onClick={() => toggleSort("action")}>
-                Action {sortField === "action" && (sortAsc ? <FaSortAlphaDown /> : <FaSortAlphaUp />)}
+                Action {sortField === "action" && (sortAsc ? <FaSortUp /> : <FaSortDown />)}
               </th>
               <th onClick={() => toggleSort("item")}>
-                Item {sortField === "item" && (sortAsc ? <FaSortAlphaDown /> : <FaSortAlphaUp />)}
+                Item {sortField === "item" && (sortAsc ? <FaSortUp /> : <FaSortDown />)}
               </th>
               <th onClick={() => toggleSort("warehouse")}>
-                Warehouse {sortField === "warehouse" && (sortAsc ? <FaSortAlphaDown /> : <FaSortAlphaUp />)}
+                Warehouse {sortField === "warehouse" && (sortAsc ? <FaSortUp /> : <FaSortDown />)}
               </th>
               <th>Details</th>
             </tr>
