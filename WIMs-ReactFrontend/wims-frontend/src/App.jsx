@@ -95,6 +95,10 @@ function App() {
     </PrivateRoute>}
 />
 
+<Route
+  path="/warehouse/:warehouseId/products"
+  element={<PrivateRoute><DashboardLayout><ClerkProductMasterlist /></DashboardLayout></PrivateRoute>}
+/>
 
       </Routes>
     </Router>

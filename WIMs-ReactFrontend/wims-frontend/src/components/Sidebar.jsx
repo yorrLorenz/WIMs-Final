@@ -8,7 +8,7 @@ import {
   FaSignOutAlt,
   FaUserCircle,
   FaBoxes,
-} from "react-icons/fa"; // 🆕 Added FaBoxes for product icon
+} from "react-icons/fa";
 import "./Sidebar.css";
 
 const Sidebar = () => {
@@ -29,29 +29,32 @@ const Sidebar = () => {
           icon={<FaTachometerAlt />}
           label="Dashboard"
         />
+
+        {/* ✅ Product Masterlist visible for both Admin and Clerk */}
+        <SidebarItem
+          to={role === "ADMIN" ? "/admin/products" : `/warehouse/${encodeURIComponent(warehouse || "")}/products`}
+          icon={<FaBoxes />}
+          label="Product Masterlist"
+        />
+
         <SidebarItem
           to={role === "ADMIN" ? "/calendar?admin=true" : "/calendar"}
           icon={<FaCalendarAlt />}
           label="Calendar"
         />
+
         <SidebarItem
           to="/account-info"
           icon={<FaUserCircle />}
           label="Profile"
         />
+
         {role === "ADMIN" && (
-          <>
-            <SidebarItem
-              to="/select-warehouse"
-              icon={<FaCog />}
-              label="Warehouse Management"
-            />
-            <SidebarItem
-              to="/admin/products"
-              icon={<FaBoxes />}
-              label="Product Masterlist"
-            />
-          </>
+          <SidebarItem
+            to="/select-warehouse"
+            icon={<FaCog />}
+            label="Warehouse Management"
+          />
         )}
       </div>
 
