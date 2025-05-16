@@ -11,6 +11,7 @@ import DashboardLayout from "./layouts/DashboardLayout";
 import CalendarPage from "./pages/CalendarPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import AccountInfo from "./pages/AccountInfo";
+import AdminProductMasterlist from "./pages/AdminProductMasterlist"; 
 
 
 
@@ -85,6 +86,11 @@ function App() {
   </PrivateRoute>
 } />
 
+
+<Route
+  path="/admin/products"
+  element={<PrivateRoute><AdminProductMasterlist /></PrivateRoute>}
+/>
 
 
       </Routes>

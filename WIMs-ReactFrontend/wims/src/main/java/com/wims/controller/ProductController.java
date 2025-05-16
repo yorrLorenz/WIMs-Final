@@ -216,4 +216,15 @@ public class ProductController {
         public int getUnits() { return units; }
         public void setUnits(int units) { this.units = units; }
     }
+
+    @GetMapping("/all")
+public ResponseEntity<List<Product>> getAllProducts() {
+    return ResponseEntity.ok(productRepository.findAll());
+}
+
+@GetMapping("/by-warehouse")
+public ResponseEntity<List<Product>> getByWarehouse(@RequestParam String name) {
+    return ResponseEntity.ok(productRepository.findByWarehouse(name));
+}
+
 }

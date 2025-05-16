@@ -1,4 +1,3 @@
-
 import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
@@ -8,7 +7,8 @@ import {
   FaCog,
   FaSignOutAlt,
   FaUserCircle,
-} from "react-icons/fa";
+  FaBoxes,
+} from "react-icons/fa"; // 🆕 Added FaBoxes for product icon
 import "./Sidebar.css";
 
 const Sidebar = () => {
@@ -40,11 +40,18 @@ const Sidebar = () => {
           label="Profile"
         />
         {role === "ADMIN" && (
-          <SidebarItem
-            to="/select-warehouse"
-            icon={<FaCog />}
-            label="Warehouse Management"
-          />
+          <>
+            <SidebarItem
+              to="/select-warehouse"
+              icon={<FaCog />}
+              label="Warehouse Management"
+            />
+            <SidebarItem
+              to="/admin/products"
+              icon={<FaBoxes />}
+              label="Product Masterlist"
+            />
+          </>
         )}
       </div>
 
@@ -70,6 +77,5 @@ const SidebarItem = ({ to, icon, label }) => (
     <span className="sidebar-label">{label}</span>
   </NavLink>
 );
-
 
 export default Sidebar;

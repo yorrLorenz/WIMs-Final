@@ -1,6 +1,8 @@
 package com.wims.repository;
 
 import com.wims.model.Log;
+import com.wims.model.Product;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;
@@ -28,6 +30,7 @@ public interface LogRepository extends JpaRepository<Log, Long> {
     long countByWarehouseAndDateTimeBetween(String warehouse, LocalDateTime start, LocalDateTime end);
 
     List<Log> findByGroupId(String groupId);
+List<Product> findByWarehouse(String warehouse);
 
     int countByGroupIdStartingWith(String prefix);
 }
