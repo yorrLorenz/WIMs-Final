@@ -12,6 +12,7 @@ import CalendarPage from "./pages/CalendarPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import AccountInfo from "./pages/AccountInfo";
 import AdminProductMasterlist from "./pages/AdminProductMasterlist"; 
+import ClerkProductMasterlist from "./pages/clerk/ClerkProductMasterlist";
 
 
 
