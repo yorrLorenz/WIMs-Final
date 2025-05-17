@@ -16,7 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.time.Instant;
 import java.util.*;
-import java.util.stream.Collectors;
+
 
 @Controller
 public class DashboardController {
@@ -79,7 +79,7 @@ public class DashboardController {
         Warehouse warehouse = optionalWarehouse.get();
 
         Log log = new Log();
-        log.setDateTime(Instant.now());  // ✅ Store accurate UTC time
+        log.setDateTime(Instant.now());  
         log.setUsername(principal.getName());
         log.setAction(logForm.getAction());
         log.setItem(logForm.getItem());

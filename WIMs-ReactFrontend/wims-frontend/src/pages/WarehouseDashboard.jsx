@@ -56,7 +56,7 @@ const WarehouseDashboard = () => {
         stompClient.subscribe(`/topic/logs/${warehouseId}`, (message) => {
           const newLog = JSON.parse(message.body);
 
-          // Option 1: Re-fetch logs to include correct related logs
+          
           fetchLogs();
 
           toast.success("New log added!");

@@ -151,12 +151,12 @@ public class Log {
 
     @PrePersist
     public void beforePersist() {
-        // Set timestamp in UTC if not set
+        
         if (this.dateTime == null) {
             this.dateTime = Instant.now();
         }
 
-        // Generate group ID if restocked and not present
+       
         if ("Restocked".equalsIgnoreCase(action) && (groupId == null || groupId.isBlank())) {
             this.groupId = UUID.randomUUID().toString();
         }

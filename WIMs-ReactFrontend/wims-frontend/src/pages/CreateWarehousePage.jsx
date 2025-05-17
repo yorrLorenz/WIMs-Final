@@ -19,7 +19,7 @@ const LocationSelector = ({ onLocationSelect }) => {
     click(e) {
       const { lat, lng } = e.latlng;
 
-      // ✅ Only allow clicks within valid Earth bounds
+     
       if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return;
 
       onLocationSelect(e.latlng);

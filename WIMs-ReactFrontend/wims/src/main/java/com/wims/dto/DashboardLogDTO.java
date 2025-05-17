@@ -5,7 +5,7 @@ import java.util.List;
 
 public class DashboardLogDTO {
     private Long id;
-    private Instant dateTime;  // ✅ use Instant for accuracy
+    private Instant dateTime;  
     private String username;
     private String action;
     private String item;

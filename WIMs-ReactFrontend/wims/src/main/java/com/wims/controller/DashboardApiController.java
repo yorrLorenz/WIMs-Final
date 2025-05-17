@@ -37,7 +37,7 @@ public DashboardResponseDTO getLogsByDateForWarehouse(
 ) {
     LocalDate parsedDate = LocalDate.parse(date);
 
-    // Convert to start and end of day in user's timezone (Asia/Manila)
+ 
     ZoneId zone = ZoneId.of("Asia/Manila");
     Instant start = parsedDate.atStartOfDay(zone).toInstant();
     Instant end = parsedDate.atTime(23, 59, 59).atZone(zone).toInstant();

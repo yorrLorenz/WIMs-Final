@@ -158,7 +158,7 @@ const CreateAccountPage = () => {
               <button type="button" className="brown-btn" onClick={captureFromWebcam}>
                 Capture
               </button>
-              {captured && <p className="captured-indicator">✅ Image Captured</p>}
+              {captured && <p className="captured-indicator"> Image Captured</p>}
             </>
           )}
         </div>

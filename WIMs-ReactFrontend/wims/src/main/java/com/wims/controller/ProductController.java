@@ -46,7 +46,7 @@ public class ProductController {
         log.setUsername(user.getUsername());
         log.setAction(request.getAction());
         log.setWarehouse(request.getWarehouse());
-        log.setDateTime(Instant.now());  // ✅ UTC timestamp
+        log.setDateTime(Instant.now()); 
 
         if ("Restocked".equalsIgnoreCase(request.getAction())) {
             String groupId = generateCustomGroupId(warehouse);
@@ -144,7 +144,7 @@ public class ProductController {
                 originalLog.setItem(original.getItem());
                 originalLog.setLocation(oldLocation);
                 originalLog.setUnits(original.getUnits());
-                originalLog.setDateTime(Instant.now());  // ✅ Corrected
+                originalLog.setDateTime(Instant.now()); 
                 originalLog.setPreviousLocation(oldLocation);
                 logRepository.save(originalLog);
 

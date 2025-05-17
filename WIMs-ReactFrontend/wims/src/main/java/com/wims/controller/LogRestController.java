@@ -33,7 +33,7 @@ public class LogRestController {
         }
 
         log.setWarehouse(decodedWarehouseName);
-        log.setDateTime(Instant.now());  // ✅ Use Instant for correct UTC timestamp
+        log.setDateTime(Instant.now()); 
         logRepository.save(log);
 
         return ResponseEntity.ok("Log saved");
