@@ -37,4 +37,5 @@ List<Product> findByWarehouse(String warehouse);
     List<Log> findByDateTimeBetweenOrderByDateTimeDesc(Instant start, Instant end);
 List<Log> findByWarehouseAndDateTimeBetweenOrderByDateTimeDesc(String warehouse, Instant start, Instant end);
 
+
 }

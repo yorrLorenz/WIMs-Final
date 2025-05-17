@@ -30,9 +30,8 @@ const Sidebar = () => {
   label="Dashboard"
   end
 />
-ddd
 
-        {/* ✅ Product Masterlist visible for both Admin and Clerk */}
+       
         <SidebarItem
           to={role === "ADMIN" ? "/admin/products" : `/warehouse/${encodeURIComponent(warehouse || "")}/products`}
           icon={<FaBoxes />}

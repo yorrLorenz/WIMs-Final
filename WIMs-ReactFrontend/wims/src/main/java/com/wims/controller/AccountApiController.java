@@ -65,31 +65,35 @@ public class AccountApiController {
     }
 
     @GetMapping("/dashboard-by-date")
-    public DashboardResponseDTO getLogsByDateForAdmin(@RequestParam("date") String date) {
-        LocalDate parsedDate = LocalDate.parse(date);
-        Instant start = parsedDate.atStartOfDay(ZoneOffset.UTC).toInstant();
-        Instant end = parsedDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant().minusSeconds(1);
+public DashboardResponseDTO getLogsByDateForAdmin(@RequestParam("date") String date) {
+    LocalDate parsedDate = LocalDate.parse(date);
+    
+    ZoneId zone = ZoneId.of("Asia/Manila");
+    Instant start = parsedDate.atStartOfDay(zone).toInstant();
+    Instant end = parsedDate.atTime(23, 59, 59).atZone(zone).toInstant();
 
-        List<Log> logs = logRepository.findByDateTimeBetweenOrderByDateTimeDesc(start, end);
+    List<Log> logs = logRepository.findByDateTimeBetweenOrderByDateTimeDesc(start, end);
 
-        List<DashboardLogDTO> dtos = logs.stream()
-                .map(log -> new DashboardLogDTO(
-                        log.getId(),
-                        log.getDateTime(),
-                        log.getUsername(),
-                        log.getAction(),
-                        log.getItem(),
-                        log.getWarehouse(),
-                        log.getLocation(),
-                        log.getGroupId(),
-                        log.getUnits(),
-                        log.getRemainingUnits(),
-                        log.getPreviousLocation()
-                ))
-                .collect(Collectors.toList());
+    List<DashboardLogDTO> dtos = logs.stream()
+            .map(log -> new DashboardLogDTO(
+                    log.getId(),
+                    log.getDateTime(),
+                    log.getUsername(),
+                    log.getAction(),
+                    log.getItem(),
+                    log.getWarehouse(),
+                    log.getLocation(),
+                    log.getGroupId(),
+                    log.getUnits(),
+                    log.getRemainingUnits(),
+                    log.getPreviousLocation()
+            ))
+            .collect(Collectors.toList());
 
-        return new DashboardResponseDTO("All Warehouses", dtos);
-    }
+    return new DashboardResponseDTO("All Warehouses", dtos);
+}
+
+
 
     @GetMapping
     public List<User> getAllAccounts() {
