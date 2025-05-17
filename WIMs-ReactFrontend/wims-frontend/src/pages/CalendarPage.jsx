@@ -47,39 +47,47 @@ const CalendarPage = () => {
     }
   }, [isAdmin]);
 
-  const fetchLogs = () => {
-    const formattedDate = format(selectedDate, "yyyy-MM-dd");
+ const fetchLogs = () => {
+  const formattedDate = new Date(
+    Date.UTC(
+      selectedDate.getFullYear(),
+      selectedDate.getMonth(),
+      selectedDate.getDate()
+    )
+  ).toISOString().split("T")[0];
 
-    if (!isAdmin && (!warehouse || warehouse.trim() === "")) {
-      console.warn("Invalid or missing warehouse name");
-      return;
-    }
+  if (!isAdmin && (!warehouse || warehouse.trim() === "")) {
+    console.warn("Invalid or missing warehouse name");
+    return;
+  }
 
-    const url = isAdmin
-      ? `https://wims-w48m.onrender.com/api/accounts/dashboard-by-date?date=${formattedDate}`
-      : `https://wims-w48m.onrender.com/api/dashboard-by-date?date=${formattedDate}&warehouse=${encodeURIComponent(
-          warehouse
-        )}`;
+  const url = isAdmin
+    ? `https://wims-w48m.onrender.com/api/accounts/dashboard-by-date?date=${formattedDate}`
+    : `https://wims-w48m.onrender.com/api/dashboard-by-date?date=${formattedDate}&warehouse=${encodeURIComponent(
+        warehouse
+      )}`;
 
-    fetch(url, { credentials: "include" })
-      .then(async (res) => {
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error("Failed to fetch logs: " + text);
-        }
-        return res.json();
-      })
-      .then((data) => {
-        const sorted = (data.logs || []).sort(
-          (a, b) => new Date(b.dateTime) - new Date(a.dateTime)
-        );
-        setLogs(sorted);
-      })
-      .catch((err) => {
-        console.error("Error loading logs:", err);
-        setLogs([]);
-      });
-  };
+  fetch(url, { credentials: "include" })
+    .then(async (res) => {
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error("Failed to fetch logs: " + text);
+      }
+      return res.json();
+    })
+    .then((data) => {
+      const sorted = (data.logs || []).sort(
+        (a, b) => new Date(b.dateTime) - new Date(a.dateTime)
+      );
+      setLogs(sorted);
+    })
+    .catch((err) => {
+      console.error("Error loading logs:", err);
+      setLogs([]);
+    });
+};
+
+
 
   useEffect(() => {
     fetchLogs();

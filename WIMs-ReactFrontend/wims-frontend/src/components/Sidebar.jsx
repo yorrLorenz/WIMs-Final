@@ -25,10 +25,12 @@ const Sidebar = () => {
     <div className="sidebar">
       <div className="sidebar-top">
         <SidebarItem
-          to={role === "ADMIN" ? "/admin-dashboard" : `/warehouse/${encodeURIComponent(warehouse || "")}`}
-          icon={<FaTachometerAlt />}
-          label="Dashboard"
-        />
+  to={role === "ADMIN" ? "/admin-dashboard" : `/warehouse/${encodeURIComponent(warehouse || "")}`}
+  icon={<FaTachometerAlt />}
+  label="Dashboard"
+  end
+/>
+ddd
 
         {/* ✅ Product Masterlist visible for both Admin and Clerk */}
         <SidebarItem
@@ -68,9 +70,10 @@ const Sidebar = () => {
   );
 };
 
-const SidebarItem = ({ to, icon, label }) => (
+const SidebarItem = ({ to, icon, label, end = false }) => (
   <NavLink
     to={to}
+    end={end}
     className={({ isActive }) =>
       `sidebar-icon ${isActive ? "active" : ""}`
     }
@@ -80,5 +83,6 @@ const SidebarItem = ({ to, icon, label }) => (
     <span className="sidebar-label">{label}</span>
   </NavLink>
 );
+
 
 export default Sidebar;
